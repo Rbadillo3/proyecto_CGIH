@@ -1,0 +1,2 @@
+# proyecto_CGIH
+Proyecto Final de la materia COMPUTACION GRAFICA E INTERACCION HUMANO-COMPUTADORA
