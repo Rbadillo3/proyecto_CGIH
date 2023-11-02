@@ -35,7 +35,7 @@ Integrantes:
 #include"Model.h"
 #include "Skybox.h"
 
-//para iluminación
+//para iluminaci�n
 #include "CommonValues.h"
 #include "DirectionalLight.h"
 #include "PointLight.h"
@@ -43,23 +43,27 @@ Integrantes:
 #include "Material.h"
 const float toRadians = 3.14159265f / 180.0f;
 
-//variables para animación
-float movCoche;
+// =========				Variables de control para animaci�n				===============
+
+//====	Moneda
 float movMoneda;
-float movCanica;
-float movCanicaY;
-float movOffset;
 float movMonedaOffset;
-float movCanicaOffset;
-float rotllanta;
-float rotMoneda;
-float rotCanica;
 float rotMonedaOffset;
-float rotllantaOffset;
-float rotCanicaOffset;
-bool avanza;
+float rotMoneda;
 bool avanzaMoneda;
+
+//====	Canica
+float movCanicaY;
+float movCanica;
+float movCanicaOffset;
+float rotCanica;
+float rotCanicaOffset;
 bool avanzaCanica;
+
+float movOffset;
+bool avanza;
+
+
 Window mainWindow;
 std::vector<Mesh*> meshList;
 std::vector<Shader> shaderList;
@@ -73,14 +77,27 @@ Texture pisoTexture;
 Texture AgaveTexture;
 Texture white;
 
-Model Kitt_M;
-Model Llanta_M;
-Model Blackhawk_M;
+// =========				Variables de MODELOS				===============
 
+
+//====	Star Wars
+Model Ca�oneraLAAT;
+Model ComandanteFordo;
+
+//====	Kirby
+
+
+//====	Billy y Mandy
+
+
+
+//====	Elementos del PINBALL
 Model Pinball;
 Model Coin;
 Model Canica;
 Model Tapa;
+
+
 
 Skybox skybox;
 
@@ -107,7 +124,7 @@ static const char* vShader = "shaders/shader_light.vert";
 static const char* fShader = "shaders/shader_light.frag";
 
 
-//función de calculo de normales por promedio de vértices 
+//funci�n de calculo de normales por promedio de v�rtices 
 void calcAverageNormals(unsigned int* indices, unsigned int indiceCount, GLfloat* vertices, unsigned int verticeCount,
 	unsigned int vLength, unsigned int normalOffset)
 {
@@ -240,16 +257,18 @@ int main()
 	AgaveTexture = Texture("Textures/Agave.tga");
 	AgaveTexture.LoadTextureA();
 
-	Kitt_M = Model();
-	Kitt_M.LoadModel("Models/kitt_optimizado.obj");
-	Llanta_M = Model();
-	Llanta_M.LoadModel("Models/llanta_optimizada.obj");
-	Blackhawk_M = Model();
-	Blackhawk_M.LoadModel("Models/uh60.obj");
+
 
 	Pinball = Model();
 	Pinball.LoadModel("Models/PINBALL_V3.obj");
-	//Pinball.LoadModel("Models/PinballCompleto.obj");	//Si quieres ver el modelo completo (El vidrio no servirá)
+
+	Ca�oneraLAAT = Model();
+	Ca�oneraLAAT.LoadModel("Models/rep_la_at_gunship.obj");
+
+	ComandanteFordo = Model();
+	ComandanteFordo.LoadModel("Models/rep_inf_arctrooper.obj");
+
+	//Pinball.LoadModel("Models/PinballCompleto.obj");	//Si quieres ver el modelo completo (El vidrio no servir�)
 
 	Coin = Model();
 	Coin.LoadModel("Models/Coin.obj");
@@ -274,13 +293,13 @@ int main()
 	Material_opaco = Material(0.3f, 4);
 
 
-	//luz direccional, sólo 1 y siempre debe de existir
+	//luz direccional, s�lo 1 y siempre debe de existir
 	mainLight = DirectionalLight(1.0f, 1.0f, 1.0f,
 		0.3f, 0.3f,
 		0.0f, 0.0f, -1.0f);
 	//contador de luces puntuales
 	unsigned int pointLightCount = 0;
-	//Declaración de primer luz puntual
+	//Declaraci�n de primer luz puntual
 	pointLights[0] = PointLight(1.0f, 0.0f, 0.0f,
 		0.0f, 1.0f,
 		-6.0f, 1.5f, 1.5f,
@@ -311,13 +330,9 @@ int main()
 	GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0, uniformEyePosition = 0,
 		uniformSpecularIntensity = 0, uniformShininess = 0;
 	GLuint uniformColor = 0;
-	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 1000.0f);
+	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 2000.0f); //Campo de Visi�n
 
-	movCoche = 0.0f;
-	movOffset = 0.35f;
-	rotllanta = 0.0f;
-	rotllantaOffset = 5.0f;
-	avanza = true;
+
 
 	movMoneda = 0.0f;
 	movMonedaOffset = 0.35f;
@@ -327,7 +342,7 @@ int main()
 
 	movCanica = 0.0f;
 	movCanicaY = 0.0f;
-	movCanicaOffset = 0.35f;
+	movCanicaOffset = 3.75f;
 	rotCanica = 0.0f;
 	rotCanicaOffset = 5.0f;
 	avanzaCanica = false;
@@ -340,41 +355,13 @@ int main()
 		deltaTime += (now - lastTime) / limitFPS;
 		lastTime = now;
 
-
-		if (avanza)
-		{
-			if (movCoche > -300.0f)
-			{
-				movCoche -= movOffset * deltaTime;
-				//printf("avanza%f \n ",movCoche);
-				rotllanta += rotllantaOffset * deltaTime;
-			}
-			else
-			{
-				avanza = false;
-			}
-		}
-		else
-		{
-			if (movCoche < 285.0f)
-			{
-				movCoche += movOffset * deltaTime;
-				//printf("avanza%f \n ",movCoche);
-				rotllanta -= rotllantaOffset * deltaTime;
-			}
-			else
-			{
-				avanza = true;
-			}
-		}
-
 		if (mainWindow.getapagaLuzCocheD()) {
 			if (avanzaMoneda)
 			{
-				if (movMoneda > -191.0f)
+				if (movMoneda < 110.0f)
 				{
-					movMoneda -= movMonedaOffset * deltaTime;
-					//printf("avanza%f \n ",movCoche);
+					movMoneda += movMonedaOffset * deltaTime;
+					printf("avanza%f \n ", movMoneda);
 					rotMoneda += rotMonedaOffset * deltaTime;
 				}
 				else
@@ -384,12 +371,12 @@ int main()
 					if (avanzaCanica)
 					{
 						printf("ENTRASTE A LA CONDICION DE MOVCANICA  \n ");
-						if (movCanica < 20.0f)
+						if (movCanica < 410.0f)
 						{
 							printf("ENTRASTE A LA CONDICION DE MOVCANICA la que de \n ");
 							movCanica += movCanicaOffset * deltaTime;
 							movCanicaY -= movCanicaOffset * deltaTime;
-							//printf("avanza%f \n ",movCoche);
+							printf("avanza%f \n ", movCanica);
 							rotCanica += rotCanicaOffset * deltaTime;
 						}
 						else
@@ -410,10 +397,9 @@ int main()
 			rotMonedaOffset = 5.0f;
 
 			movCanica = 0.0f;
-			movCanicaOffset = 0.35f;
+			movCanicaOffset = 3.75f;
 			rotCanica = 0.0f;
 			rotCanicaOffset = 5.0f;
-
 		}
 
 
@@ -433,7 +419,7 @@ int main()
 		uniformEyePosition = shaderList[0].GetEyePositionLocation();
 		uniformColor = shaderList[0].getColorLocation();
 
-		//información en el shader de intensidad especular y brillo
+		//informaci�n en el shader de intensidad especular y brillo
 		uniformSpecularIntensity = shaderList[0].GetSpecularIntensityLocation();
 		uniformShininess = shaderList[0].GetShininessLocation();
 
@@ -441,13 +427,13 @@ int main()
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
 		glUniform3f(uniformEyePosition, camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
 
-		// luz ligada a la cámara de tipo flash
-		//sirve para que en tiempo de ejecución (dentro del while) se cambien propiedades de la luz
+		// luz ligada a la c�mara de tipo flash
+		//sirve para que en tiempo de ejecuci�n (dentro del while) se cambien propiedades de la luz
 		glm::vec3 lowerLight = camera.getCameraPosition();
 		lowerLight.y -= 0.3f;
 		spotLights[0].SetFlash(lowerLight, camera.getCameraDirection());
 
-		//información al shader de fuentes de iluminación
+		//informaci�n al shader de fuentes de iluminaci�n
 		shaderList[0].SetDirectionalLight(&mainLight);
 		shaderList[0].SetPointLights(pointLights, pointLightCount);
 		shaderList[0].SetSpotLights(spotLights, spotLightCount);
@@ -466,38 +452,51 @@ int main()
 
 		pisoTexture.UseTexture();
 		Material_opaco.UseMaterial(uniformSpecularIntensity, uniformShininess);
-
 		meshList[2]->RenderMesh();
+
 
 		//Monedita
 		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(20.0f, 10.0f, 250.0f));
-		model = glm::translate(model, glm::vec3(0.0f, 15.0f, movMoneda));
+		model = glm::translate(model, glm::vec3(200.0f, 10.0f, 700.0f));
+		model = glm::translate(model, glm::vec3(0.0f, 14.3f, -movMoneda));
 		model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::rotate(model, -rotMoneda * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(1.2f, 1.2f, 1.2f));
+		model = glm::scale(model, glm::vec3(8.5f, 8.5f, 8.5f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Coin.RenderModel();
 
 		//Canica del Pinball
 		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(0.0f, 25.0f, 55.5f));
+		model = glm::translate(model, glm::vec3(0.0f, 28.1f, 350.5f));
 		model = glm::translate(model, glm::vec3(movCanica, 0.0f, 0.0f));
-		model = glm::rotate(model, rotCanica * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(0.3f, 0.3f, 0.3f));
+		model = glm::rotate(model, -rotCanica * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(3.0f, 3.0f, 3.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Canica.RenderModel();
+
+
+		//Ca�onera
+		model = glm::mat4(1.0);
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Ca�oneraLAAT.RenderModel();
+
+
+		//Comandante FORDO
+		model = glm::mat4(1.0);
+		
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		ComandanteFordo.RenderModel();
 
 		///*
 		//Tablero de Pinball
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(0.0f, 25.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(100.0f, 60.0f, 50.0f));
+		model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Pinball.RenderModel();
 		//*/
 
-		//Agave ¿qué sucede si lo renderizan antes del coche y el helicóptero?
+		//Agave �qu� sucede si lo renderizan antes del coche y el helic�ptero?
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(0.0f, 1.0f, -4.0f));
 		model = glm::scale(model, glm::vec3(4.0f, 4.0f, 4.0f));
@@ -506,8 +505,8 @@ int main()
 		//blending: transparencia o traslucidez
 		// ===========		EL PODER DE LA TRANSPARENCIA DE OBJETOS EN LA PALMA DE MI MANO!!!!!!
 		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(0.0f, 25.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(100.0f, 60.0f, 50.0f));
+		model = glm::translate(model, glm::vec3(0.0f, 24.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
