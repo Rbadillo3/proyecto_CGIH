@@ -1,13 +1,14 @@
 /*
-UNIVERSIDAD NACIONAL AUTÓNOMA DE MÉXICO 
+UNIVERSIDAD NACIONAL AUTÓNOMA DE MÉXICO
 FACULTAD DE INGENIERIA
-Proyecto Final: Pinball
-Grupo: 04
-Integrantes: 
--Alvarez Badillo Rodrigo 
+Proyecto Final: Tablero de Pinball
+Grupo de Teoría: 04
+Integrantes:
+-Alvarez Badillo Rodrigo
 -Arriaga Vitela Carlos Eduardo
 -Rivas Arteaga Enrique Alan
 */
+
 
 //para cargar imagen
 #define STB_IMAGE_IMPLEMENTATION
@@ -36,7 +37,7 @@ Integrantes:
 #include"Model.h"
 #include "Skybox.h"
 
-//para iluminaci�n
+//para iluminación
 #include "CommonValues.h"
 #include "DirectionalLight.h"
 #include "PointLight.h"
@@ -44,7 +45,7 @@ Integrantes:
 #include "Material.h"
 const float toRadians = 3.14159265f / 180.0f;
 
-// =========				Variables de control para animaci�n				===============
+// =========				Variables de control para animación				===============
 
 //====	Moneda
 float movMoneda;
@@ -82,9 +83,9 @@ Texture white;
 
 
 //====	Star Wars
-Model Ca�oneraLAAT;
+Model CañoneraLAAT;
 Model ComandanteFordo;
-
+Model FighterTank;
 //====	Kirby
 
 
@@ -125,7 +126,7 @@ static const char* vShader = "shaders/shader_light.vert";
 static const char* fShader = "shaders/shader_light.frag";
 
 
-//funci�n de calculo de normales por promedio de v�rtices 
+//función de calculo de normales por promedio de vértices 
 void calcAverageNormals(unsigned int* indices, unsigned int indiceCount, GLfloat* vertices, unsigned int verticeCount,
 	unsigned int vLength, unsigned int normalOffset)
 {
@@ -261,15 +262,18 @@ int main()
 
 
 	Pinball = Model();
-	Pinball.LoadModel("Models/PINBALL_V3.obj");
+	Pinball.LoadModel("Models/PINBALL_V4.obj");
 
-	Ca�oneraLAAT = Model();
-	Ca�oneraLAAT.LoadModel("Models/rep_la_at_gunship.obj");
+	CañoneraLAAT = Model();
+	CañoneraLAAT.LoadModel("Models/rep_la_at_gunship.obj");
+
+	FighterTank = Model();
+	FighterTank.LoadModel("Models/rep_hover_fightertank.obj");
 
 	ComandanteFordo = Model();
 	ComandanteFordo.LoadModel("Models/rep_inf_arctrooper.obj");
 
-	//Pinball.LoadModel("Models/PinballCompleto.obj");	//Si quieres ver el modelo completo (El vidrio no servir�)
+	//Pinball.LoadModel("Models/PinballCompleto.obj");	//Si quieres ver el modelo completo (El vidrio no servirá)
 
 	Coin = Model();
 	Coin.LoadModel("Models/Coin.obj");
@@ -294,13 +298,13 @@ int main()
 	Material_opaco = Material(0.3f, 4);
 
 
-	//luz direccional, s�lo 1 y siempre debe de existir
+	//luz direccional, sólo 1 y siempre debe de existir
 	mainLight = DirectionalLight(1.0f, 1.0f, 1.0f,
 		0.3f, 0.3f,
 		0.0f, 0.0f, -1.0f);
 	//contador de luces puntuales
 	unsigned int pointLightCount = 0;
-	//Declaraci�n de primer luz puntual
+	//Declaración de primer luz puntual
 	pointLights[0] = PointLight(1.0f, 0.0f, 0.0f,
 		0.0f, 1.0f,
 		-6.0f, 1.5f, 1.5f,
@@ -331,7 +335,7 @@ int main()
 	GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0, uniformEyePosition = 0,
 		uniformSpecularIntensity = 0, uniformShininess = 0;
 	GLuint uniformColor = 0;
-	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 2000.0f); //Campo de Visi�n
+	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 2500.0f); //Campo de Visión
 
 
 
@@ -359,7 +363,7 @@ int main()
 		if (mainWindow.getapagaLuzCocheD()) {
 			if (avanzaMoneda)
 			{
-				if (movMoneda < 110.0f)
+				if (movMoneda < 100.0f)
 				{
 					movMoneda += movMonedaOffset * deltaTime;
 					printf("avanza%f \n ", movMoneda);
@@ -372,7 +376,7 @@ int main()
 					if (avanzaCanica)
 					{
 						printf("ENTRASTE A LA CONDICION DE MOVCANICA  \n ");
-						if (movCanica < 410.0f)
+						if (movCanica < 205.0f)
 						{
 							printf("ENTRASTE A LA CONDICION DE MOVCANICA la que de \n ");
 							movCanica += movCanicaOffset * deltaTime;
@@ -420,7 +424,7 @@ int main()
 		uniformEyePosition = shaderList[0].GetEyePositionLocation();
 		uniformColor = shaderList[0].getColorLocation();
 
-		//informaci�n en el shader de intensidad especular y brillo
+		//información en el shader de intensidad especular y brillo
 		uniformSpecularIntensity = shaderList[0].GetSpecularIntensityLocation();
 		uniformShininess = shaderList[0].GetShininessLocation();
 
@@ -428,22 +432,25 @@ int main()
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
 		glUniform3f(uniformEyePosition, camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
 
-		// luz ligada a la c�mara de tipo flash
-		//sirve para que en tiempo de ejecuci�n (dentro del while) se cambien propiedades de la luz
+		// luz ligada a la cámara de tipo flash
+		//sirve para que en tiempo de ejecución (dentro del while) se cambien propiedades de la luz
 		glm::vec3 lowerLight = camera.getCameraPosition();
 		lowerLight.y -= 0.3f;
 		spotLights[0].SetFlash(lowerLight, camera.getCameraDirection());
 
-		//informaci�n al shader de fuentes de iluminaci�n
+		//información al shader de fuentes de iluminación
 		shaderList[0].SetDirectionalLight(&mainLight);
 		shaderList[0].SetPointLights(pointLights, pointLightCount);
 		shaderList[0].SetSpotLights(spotLights, spotLightCount);
 
 
-
+		// =========				DECLARACIÓN DE MATRIZ Y AUXILIARES
 		glm::mat4 model(1.0);
 		glm::mat4 modelaux(1.0);
+
+
 		glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
+
 
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(0.0f, -1.0f, 0.0f));
@@ -455,38 +462,9 @@ int main()
 		Material_opaco.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		meshList[2]->RenderMesh();
 
-
-		//Monedita
-		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(200.0f, 10.0f, 700.0f));
-		model = glm::translate(model, glm::vec3(0.0f, 14.3f, -movMoneda));
-		model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::rotate(model, -rotMoneda * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(8.5f, 8.5f, 8.5f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Coin.RenderModel();
-
-		//Canica del Pinball
-		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(0.0f, 28.1f, 350.5f));
-		model = glm::translate(model, glm::vec3(movCanica, 0.0f, 0.0f));
-		model = glm::rotate(model, -rotCanica * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(3.0f, 3.0f, 3.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Canica.RenderModel();
-
-
-		//Ca�onera
-		model = glm::mat4(1.0);
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Ca�oneraLAAT.RenderModel();
-
-
-		//Comandante FORDO
-		model = glm::mat4(1.0);
+		// =========				Instancias de dibujado de MODELOS y PRIMITIVAS			===============
 		
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		ComandanteFordo.RenderModel();
+		// =========				Relacionadas al PINBALL
 
 		///*
 		//Tablero de Pinball
@@ -497,14 +475,76 @@ int main()
 		Pinball.RenderModel();
 		//*/
 
-		//Agave �qu� sucede si lo renderizan antes del coche y el helic�ptero?
+		//Monedita
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(-107.0f, 10.0f, 700.0f));
+		model = glm::translate(model, glm::vec3(0.0f, 14.3f, -movMoneda));
+		model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::rotate(model, -rotMoneda * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(8.5f, 8.5f, 8.5f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Coin.RenderModel();
+
+		//Canica del Pinball
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(0.0f, 28.1f, 550.5f));
+		model = glm::translate(model, glm::vec3(movCanica, 0.0f, 0.0f));
+		model = glm::rotate(model, -rotCanica * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(3.5f, 3.5f, 3.5f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Canica.RenderModel();
+
+
+		// =========				Relacionadas a STAR WARS
+
+		//Cañonera 1
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(124.0f, 274.8f, -420.0f));
+		model = glm::rotate(model, 90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model,15 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(0.85f, 0.85f, 0.85f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		CañoneraLAAT.RenderModel();
+
+		//Cañonera 2
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(124.0f, 252.5f, -335.0f));
+		model = glm::rotate(model, 90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, 15 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(0.85f, 0.85f, 0.85f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		CañoneraLAAT.RenderModel();
+
+		//Tanque
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(-100.0f, 255.8f, -350.0f));
+		model = glm::rotate(model, 180 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, -15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		FighterTank.RenderModel();
+
+
+		//Comandante FORDO
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(124.0f, 252.6f, -335.0f));
+		model = glm::rotate(model, 90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, 15 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(4.2f, 4.2f, 4.2f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		ComandanteFordo.RenderModel();
+
+
+
+		//Agave ¿qué sucede si lo renderizan antes del coche y el helicóptero?
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(0.0f, 1.0f, -4.0f));
 		model = glm::scale(model, glm::vec3(4.0f, 4.0f, 4.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 
+
 		//blending: transparencia o traslucidez
-		// ===========		EL PODER DE LA TRANSPARENCIA DE OBJETOS EN LA PALMA DE MI MANO!!!!!!
+		// ===========		PARA APLICAR TRANSPARENCIA: EL PODER DE LA TRANSPARENCIA DE OBJETOS EN LA PALMA DE MI MANO!!!!!!
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(0.0f, 24.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
