@@ -1,5 +1,6 @@
 /*
 UNIVERSIDAD NACIONAL AUTÓNOMA DE MÉXICO 
+FACULTAD DE INGENIERIA
 Proyecto Final: Pinball
 Grupo: 04
 Integrantes: 
