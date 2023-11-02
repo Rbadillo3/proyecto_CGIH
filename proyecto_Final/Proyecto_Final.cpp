@@ -1,12 +1,13 @@
 /*
-Semestre 2024-1
-Animación:
-Sesión 1:
-Simple o básica:Por banderas y condicionales (más de 1 transforomación geométrica se ve modificada
-Sesión 2
-Compleja: Por medio de funciones y algoritmos.
-Adicional.- Textura Animada
+UNIVERSIDAD NACIONAL AUTÃ“NOMA DE MÃ‰XICO 
+Proyecto Final: Pinball
+Grupo: 04
+Integrantes: 
+-Alvarez Badillo Rodrigo 
+-Arriaga Vitela Carlos Eduardo
+-Rivas Arteaga Enrique Alan
 */
+
 //para cargar imagen
 #define STB_IMAGE_IMPLEMENTATION
 
@@ -34,7 +35,7 @@ Adicional.- Textura Animada
 #include"Model.h"
 #include "Skybox.h"
 
-//para iluminación
+//para iluminaciÃ³n
 #include "CommonValues.h"
 #include "DirectionalLight.h"
 #include "PointLight.h"
@@ -42,7 +43,7 @@ Adicional.- Textura Animada
 #include "Material.h"
 const float toRadians = 3.14159265f / 180.0f;
 
-//variables para animación
+//variables para animaciÃ³n
 float movCoche;
 float movMoneda;
 float movCanica;
@@ -106,7 +107,7 @@ static const char* vShader = "shaders/shader_light.vert";
 static const char* fShader = "shaders/shader_light.frag";
 
 
-//función de calculo de normales por promedio de vértices 
+//funciÃ³n de calculo de normales por promedio de vÃ©rtices 
 void calcAverageNormals(unsigned int* indices, unsigned int indiceCount, GLfloat* vertices, unsigned int verticeCount,
 	unsigned int vLength, unsigned int normalOffset)
 {
@@ -248,7 +249,7 @@ int main()
 
 	Pinball = Model();
 	Pinball.LoadModel("Models/PINBALL_V3.obj");
-	//Pinball.LoadModel("Models/PinballCompleto.obj");	//Si quieres ver el modelo completo (El vidrio no servirá)
+	//Pinball.LoadModel("Models/PinballCompleto.obj");	//Si quieres ver el modelo completo (El vidrio no servirÃ¡)
 
 	Coin = Model();
 	Coin.LoadModel("Models/Coin.obj");
@@ -273,13 +274,13 @@ int main()
 	Material_opaco = Material(0.3f, 4);
 
 
-	//luz direccional, sólo 1 y siempre debe de existir
+	//luz direccional, sÃ³lo 1 y siempre debe de existir
 	mainLight = DirectionalLight(1.0f, 1.0f, 1.0f,
 		0.3f, 0.3f,
 		0.0f, 0.0f, -1.0f);
 	//contador de luces puntuales
 	unsigned int pointLightCount = 0;
-	//Declaración de primer luz puntual
+	//DeclaraciÃ³n de primer luz puntual
 	pointLights[0] = PointLight(1.0f, 0.0f, 0.0f,
 		0.0f, 1.0f,
 		-6.0f, 1.5f, 1.5f,
@@ -432,7 +433,7 @@ int main()
 		uniformEyePosition = shaderList[0].GetEyePositionLocation();
 		uniformColor = shaderList[0].getColorLocation();
 
-		//información en el shader de intensidad especular y brillo
+		//informaciÃ³n en el shader de intensidad especular y brillo
 		uniformSpecularIntensity = shaderList[0].GetSpecularIntensityLocation();
 		uniformShininess = shaderList[0].GetShininessLocation();
 
@@ -440,13 +441,13 @@ int main()
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
 		glUniform3f(uniformEyePosition, camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
 
-		// luz ligada a la cámara de tipo flash
-		//sirve para que en tiempo de ejecución (dentro del while) se cambien propiedades de la luz
+		// luz ligada a la cÃ¡mara de tipo flash
+		//sirve para que en tiempo de ejecuciÃ³n (dentro del while) se cambien propiedades de la luz
 		glm::vec3 lowerLight = camera.getCameraPosition();
 		lowerLight.y -= 0.3f;
 		spotLights[0].SetFlash(lowerLight, camera.getCameraDirection());
 
-		//información al shader de fuentes de iluminación
+		//informaciÃ³n al shader de fuentes de iluminaciÃ³n
 		shaderList[0].SetDirectionalLight(&mainLight);
 		shaderList[0].SetPointLights(pointLights, pointLightCount);
 		shaderList[0].SetSpotLights(spotLights, spotLightCount);
@@ -496,7 +497,7 @@ int main()
 		Pinball.RenderModel();
 		//*/
 
-		//Agave ¿qué sucede si lo renderizan antes del coche y el helicóptero?
+		//Agave Â¿quÃ© sucede si lo renderizan antes del coche y el helicÃ³ptero?
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(0.0f, 1.0f, -4.0f));
 		model = glm::scale(model, glm::vec3(4.0f, 4.0f, 4.0f));
