@@ -1,4 +1,4 @@
-//Pr·ctica 2 semestre 2024-1: Ìndices, mesh, proyecciones, transformaciones geomÈtricas
+//Pr√°ctica 2 semestre 2024-1: √≠ndices, mesh, proyecciones, transformaciones geom√©tricas
 #include <stdio.h>
 #include <string.h>
 #include<cmath>
@@ -9,7 +9,7 @@
 #include<glm.hpp>
 #include<gtc\matrix_transform.hpp>
 #include<gtc\type_ptr.hpp>
-//clases para dar orden y limpieza al cÛdigo
+//clases para dar orden y limpieza al c√≥digo
 #include"Mesh.h"
 #include"Shader.h"
 #include"Window.h"
@@ -24,14 +24,14 @@ static const char* vShader = "shaders/shader.vert";
 static const char* fShader = "shaders/shader.frag";
 static const char* vShaderColor = "shaders/shadercolor.vert";
 static const char* fShaderColor = "shaders/shadercolor.frag";
-//shaders nuevos se crearÌan ac·
+//shaders nuevos se crear√≠an ac√°
 
 
 float angulo = 0.0f;
 
-//color cafÈ: 0.478, 0.255, 0.067
+//color caf√©: 0.478, 0.255, 0.067
 
-//Pir·mide triangular regular
+//Pir√°mide triangular regular
 void CreaPiramide()
 {
 	unsigned int indices[] = { 
@@ -52,7 +52,7 @@ void CreaPiramide()
 	obj1->CreateMesh(vertices, indices, 12, 12);
 	meshList.push_back(obj1);
 }
-//VÈrtices de un cubo
+//V√©rtices de un cubo
 void CrearCubo()
 {
 	unsigned int cubo_indices[] = {
@@ -277,7 +277,7 @@ void CrearLetrasyFiguras()
 void CreateShaders()
 {
 
-	Shader *shader1 = new Shader(); //shader para usar Ìndices: objetos: cubo y  pir·mide
+	Shader *shader1 = new Shader(); //shader para usar √≠ndices: objetos: cubo y  pir√°mide
 	shader1->CreateFromFiles(vShader, fShader);
 	shaderList.push_back(*shader1);
 
@@ -291,9 +291,9 @@ int main()
 {
 	mainWindow = Window(800, 600);
 	mainWindow.Initialise();
-	CreaPiramide(); //Ìndice 0 en MeshList
-	CrearCubo();//Ìndice 1 en MeshList
-	CrearLetrasyFiguras(); //usa MeshColor, Ìndices en MeshColorList
+	CreaPiramide(); //√≠ndice 0 en MeshList
+	CrearCubo();//√≠ndice 1 en MeshList
+	CrearLetrasyFiguras(); //usa MeshColor, √≠ndices en MeshColorList
 	CreateShaders();
 	GLuint uniformProjection = 0;
 	GLuint uniformModel = 0;
@@ -308,14 +308,14 @@ int main()
 		glClearColor(1.0f,1.0f,1.0f,1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //Se agrega limpiar el buffer de profundidad
 															
-		//Para las letras hay que usar el segundo set de shaders con Ìndice 1 en ShaderList 
+		//Para las letras hay que usar el segundo set de shaders con √≠ndice 1 en ShaderList 
 		shaderList[1].useShader();
 		uniformModel = shaderList[1].getModelLocation();
 		uniformProjection = shaderList[1].getProjectLocation();
-		//Inicializar matriz de dimensiÛn 4x4 que servir· como matriz de modelo para almacenar las transformaciones geomÈtricas
+		//Inicializar matriz de dimensi√≥n 4x4 que servir√° como matriz de modelo para almacenar las transformaciones geom√©tricas
 		
 
-		//Techo = Tri·ngulo Azul
+		//Techo = Tri√°ngulo Azul
 
 		glm::mat4 model(1.0);
 		model = glm::translate(model, glm::vec3(0.0f, 0.65f, -5.0f));
@@ -355,14 +355,14 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));//FALSE ES PARA QUE NO SEA TRANSPUESTA
 		meshColorList[4]->RenderMeshColor();
 
-		//Tronco1 = Cuadrado cafÈ
+		//Tronco1 = Cuadrado caf√©
 		glm::mat4 model(1.0);
 		model = glm::translate(model, glm::vec3(-0.75f, -0.4f,-5.0f));
 		model = glm::scale(model, glm::vec3(0.20f, 0.20f, 0.5f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));//FALSE ES PARA QUE NO SEA TRANSPUESTA
 		meshColorList[8]->RenderMeshColor();
 
-		//Tronco2 = Cuadrado cafÈ
+		//Tronco2 = Cuadrado caf√©
 
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(7.5f, 0.0f, -5.0f));
@@ -370,7 +370,7 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));//FALSE ES PARA QUE NO SEA TRANSPUESTA
 		meshColorList[9]->RenderMeshColor();
 
-		//Hojas1 = Tri·ngulo Verde
+		//Hojas1 = Tri√°ngulo Verde
 
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(-7.5f, 1.5f, -5.0f));
@@ -378,7 +378,7 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));//FALSE ES PARA QUE NO SEA TRANSPUESTA
 		meshColorList[10]->RenderMeshColor();
 
-		//Hojas2 = Tri·ngulo Verde
+		//Hojas2 = Tri√°ngulo Verde
 
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(7.5f, 0.0f, -5.0f));
@@ -395,7 +395,7 @@ int main()
 
 
 
-		//Para el cubo y la pir·mide se usa el primer set de shaders con Ìndice 0 en ShaderList
+		//Para el cubo y la pir√°mide se usa el primer set de shaders con √≠ndice 0 en ShaderList
 		shaderList[0].useShader(); 
 		uniformModel = shaderList[0].getModelLocation();
 		uniformProjection = shaderList[0].getProjectLocation();
@@ -415,9 +415,9 @@ int main()
 }
 // inicializar matriz: glm::mat4 model(1.0);
 // reestablecer matriz: model = glm::mat4(1.0);
-//TraslaciÛn
+//Traslaci√≥n
 //model = glm::translate(model, glm::vec3(0.0f, 0.0f, -5.0f));
-//////////////// ROTACI”N //////////////////
+//////////////// ROTACI√ìN //////////////////
 //model = glm::rotate(model, 45 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 ////////////////  ESCALA ////////////////
 //model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
@@ -430,3 +430,5 @@ model = glm::rotate(model, glm::radians(angulo), glm::vec3(0.0f, 1.0f, 0.0f));
 /*model = glm::rotate(model, 45 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
 model = glm::translate(model, glm::vec3(valor, 0.0f, 0.0f));
 */
+
+//Prueba que se puede cambiar
