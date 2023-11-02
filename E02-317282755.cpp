@@ -1,4 +1,5 @@
 //Práctica 2 semestre 2024-1: índices, mesh, proyecciones, transformaciones geométricas
+//HOLA
 #include <stdio.h>
 #include <string.h>
 #include<cmath>
