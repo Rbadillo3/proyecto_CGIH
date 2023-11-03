@@ -85,6 +85,7 @@ Texture white;
 //====	Star Wars
 Model CañoneraLAAT;
 Model ComandanteFordo;
+Model FighterTank;
 
 //====	Kirby
 
@@ -101,6 +102,8 @@ Model Canica;
 Model Tapa;
 Model FlipperI;
 Model FlipperD;
+Model Base_Palanca;
+Model Palanca;
 
 
 
@@ -286,9 +289,9 @@ int main()
 	AgaveTexture.LoadTextureA();
 
 
-//	Se cargan todos los objetos 
+	//	Se cargan todos los objetos 
 
-// ----------- Elementos Pinball -------------
+	// ----------- Elementos Pinball -------------
 	Pinball = Model();
 	Pinball.LoadModel("Models/PINBALL_V4.obj");
 
@@ -307,17 +310,27 @@ int main()
 	FlipperD = Model();
 	FlipperD.LoadModel("Models/hueso_FlipperDerecha.obj");
 
-// ----------- Elementos Star Wars -------------
+	Base_Palanca = Model();
+	Base_Palanca.LoadModel("Models/Base_Palanca.obj");
+
+	Palanca = Model();
+	Palanca.LoadModel("Models/palanca.obj");
+
+
+	// ----------- Elementos Star Wars -------------
 	CañoneraLAAT = Model();
 	CañoneraLAAT.LoadModel("Models/rep_la_at_gunship.obj");
+
+	FighterTank = Model();
+	FighterTank.LoadModel("Models/rep_hover_fightertank.obj");
 
 	ComandanteFordo = Model();
 	ComandanteFordo.LoadModel("Models/rep_inf_arctrooper.obj");
 
-// ----------- Elementos Kirby -------------
+	// ----------- Elementos Kirby -------------
 
 
-// ----------- Elementos Billy y Mandy -------------
+	// ----------- Elementos Billy y Mandy -------------
 	Billy = Model();
 	Billy.LoadModel("Models/Billy.obj");
 
@@ -410,7 +423,7 @@ int main()
 		if (mainWindow.getapagaLuzCocheD()) {
 			if (avanzaMoneda)
 			{
-				if (movMoneda < 110.0f)
+				if (movMoneda < 100.0f)
 				{
 					movMoneda += movMonedaOffset * deltaTime;
 					printf("avanza%f \n ", movMoneda);
@@ -423,7 +436,7 @@ int main()
 					if (avanzaCanica)
 					{
 						printf("ENTRASTE A LA CONDICION DE MOVCANICA  \n ");
-						if (movCanica < 410.0f)
+						if (movCanica < 205.0f)
 						{
 							printf("ENTRASTE A LA CONDICION DE MOVCANICA la que de \n ");
 							movCanica += movCanicaOffset * deltaTime;
@@ -494,6 +507,7 @@ int main()
 
 		glm::mat4 model(1.0);
 		glm::mat4 modelaux(1.0);
+		glm::mat4 modelauxCuerpoPinball(1.0);
 		glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
 
 		model = glm::mat4(1.0);
@@ -506,8 +520,8 @@ int main()
 		Material_opaco.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		meshList[2]->RenderMesh();
 
-// ---------OBJETOS DE BILLY-----------
-		//Billy
+		// ---------OBJETOS DE BILLY-----------
+				//Billy
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, -80.0f));
 		model = glm::scale(model, glm::vec3(5.0f, 5.0f, 5.0f));
@@ -528,24 +542,84 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Mandy.RenderModel();
 
-// ---------OBJETOS DE STAR WARS-----------
-		//Cañonera
+		// ---------OBJETOS DE STAR WARS-----------
+		//Cañonera 1
 		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(124.0f, 274.8f, -420.0f));
+		model = glm::rotate(model, 90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, 15 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(0.85f, 0.85f, 0.85f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		CañoneraLAAT.RenderModel();
+
+		//Cañonera 2
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(124.0f, 252.5f, -335.0f));
+		model = glm::rotate(model, 90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, 15 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(0.85f, 0.85f, 0.85f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		CañoneraLAAT.RenderModel();
+
+		//Tanque
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(-100.0f, 255.8f, -350.0f));
+		model = glm::rotate(model, 180 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, -15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		FighterTank.RenderModel();
 
 
 		//Comandante FORDO
 		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(124.0f, 249.2f, -335.0f));
+		model = glm::rotate(model, 90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, 15 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(4.2f, 4.2f, 4.2f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		ComandanteFordo.RenderModel();
 
-// --------- OBJETOS DE KIRBY -----------
 
-// --------- OBJETOS DE PINBALL -----------
+		// --------- OBJETOS DE KIRBY -----------
+
+		// --------- OBJETOS DE PINBALL -----------
+
+		///*
+		//Tablero de Pinball
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(0.0f, 25.0f, 0.0f));
+		//model = glm::translate(model, glm::vec3(0.0f, 0.0f, -movMoneda));
+		modelaux = model;
+		modelauxCuerpoPinball = model;
+		model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Pinball.RenderModel();
+		//*/
+
+		//Base de Palanca de Pinball
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(190.0f, 12.0f, 613.5f));
+		modelaux = model;
+		model = glm::rotate(model, -80 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, -10 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(10.0f, 10.0f, 10.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Base_Palanca.RenderModel();
+
+		//Palanca de Pinball
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(0.2f, 0.2f, -5.5f));
+		model = glm::rotate(model, -80 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, -10 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(10.0f, 10.0f, 10.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Palanca.RenderModel();
+
+
 		//Monedita
 		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(200.0f, 10.0f, 700.0f));
+		model = glm::translate(model, glm::vec3(-107.0f, 10.0f, 700.0f));
 		model = glm::translate(model, glm::vec3(0.0f, 14.3f, -movMoneda));
 		model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::rotate(model, -rotMoneda * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -555,19 +629,12 @@ int main()
 
 		//Canica del Pinball
 		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(0.0f, 28.1f, 350.5f));
+		model = glm::translate(model, glm::vec3(0.0f, 28.1f, 550.5f));
 		model = glm::translate(model, glm::vec3(movCanica, 0.0f, 0.0f));
 		model = glm::rotate(model, -rotCanica * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(3.0f, 3.0f, 3.0f));
+		model = glm::scale(model, glm::vec3(3.5f, 3.5f, 3.5f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Canica.RenderModel();
-
-		//Tablero de Pinball
-		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(0.0f, 25.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Pinball.RenderModel();
 
 		//------------ FLIPPER IZQUIERDO ----------------
 		model = glm::mat4(1.0);
