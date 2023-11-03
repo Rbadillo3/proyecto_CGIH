@@ -420,7 +420,8 @@ int main()
 		deltaTime += (now - lastTime) / limitFPS;
 		lastTime = now;
 
-		if (mainWindow.getapagaLuzCocheD()) {
+
+		if (mainWindow.getMonedaPinball()) {
 			if (avanzaMoneda)
 			{
 				if (movMoneda < 100.0f)
@@ -431,28 +432,13 @@ int main()
 				}
 				else
 				{
-					avanzaCanica = false;
 					avanzaCanica = true;
-					if (avanzaCanica)
-					{
-						printf("ENTRASTE A LA CONDICION DE MOVCANICA  \n ");
-						if (movCanica < 205.0f)
-						{
-							printf("ENTRASTE A LA CONDICION DE MOVCANICA la que de \n ");
-							movCanica += movCanicaOffset * deltaTime;
-							movCanicaY -= movCanicaOffset * deltaTime;
-							printf("avanza%f \n ", movCanica);
-							rotCanica += rotCanicaOffset * deltaTime;
-						}
-						else
-						{
-							avanzaCanica = false;
-						}
-
-					}
+					
 				}
 			}
 		}
+
+
 
 		if (mainWindow.getapagaLuzCocheT()) {
 			//RESET
@@ -504,10 +490,12 @@ int main()
 		shaderList[0].SetSpotLights(spotLights, spotLightCount);
 
 
-
+		// -----------= Definición de Matrices y Matrices de Apoyo =-------------
 		glm::mat4 model(1.0);
 		glm::mat4 modelaux(1.0);
 		glm::mat4 modelauxCuerpoPinball(1.0);
+
+
 		glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
 
 		model = glm::mat4(1.0);
@@ -599,7 +587,7 @@ int main()
 
 		//Base de Palanca de Pinball
 		model = modelaux;
-		model = glm::translate(model, glm::vec3(190.0f, 12.0f, 613.5f));
+		model = glm::translate(model, glm::vec3(204.0f, 8.0f, 609.5f));
 		modelaux = model;
 		model = glm::rotate(model, -80 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, -10 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
@@ -609,7 +597,7 @@ int main()
 
 		//Palanca de Pinball
 		model = modelaux;
-		model = glm::translate(model, glm::vec3(0.2f, 0.2f, -5.5f));
+		model = glm::translate(model, glm::vec3(-1.5f, 1.35f, -13.5f));
 		model = glm::rotate(model, -80 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, -10 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(10.0f, 10.0f, 10.0f));
@@ -644,7 +632,7 @@ int main()
 		model = glm::rotate(model, glm::radians(mainWindow.getFlipperI()), glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		FlipperI.RenderModel();
-		
+
 		//------------ FLIPPER DERECHO ----------------
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(30.0f, 37.0f, 423.0f));
@@ -728,8 +716,9 @@ int main()
 
 
 		//------------------- CRISTAL -------------------
-		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(0.0f, 24.0f, 0.0f));
+		modelaux = model;
+		model = modelauxCuerpoPinball;
+		model = glm::translate(model, glm::vec3(0.0f, 1.0f, -2.0f));
 		model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
