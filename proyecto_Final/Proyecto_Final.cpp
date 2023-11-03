@@ -85,19 +85,23 @@ Texture white;
 //====	Star Wars
 Model CañoneraLAAT;
 Model ComandanteFordo;
-Model FighterTank;
+
 //====	Kirby
 
 
 //====	Billy y Mandy
-
-
+Model Billy;
+Model Grim;
+Model Mandy;
 
 //====	Elementos del PINBALL
 Model Pinball;
 Model Coin;
 Model Canica;
 Model Tapa;
+Model FlipperI;
+Model FlipperD;
+
 
 
 
@@ -228,6 +232,28 @@ void CreateObjects()
 
 }
 
+// Pirámide triangular regular
+void CrearPiramideTriangular()
+{
+	unsigned int indices_piramide_triangular[] = {
+			0,1,2,
+			1,3,2,
+			3,0,2,
+			1,0,3
+
+	};
+	GLfloat vertices_piramide_triangular[] = {
+		-0.5f, -0.5f,0.0f,	//0
+		0.5f,-0.5f,0.0f,	//1
+		0.0f,0.5f, -0.25f,	//2
+		0.0f,-0.5f,-0.5f,	//3
+
+	};
+	Mesh* obj1 = new Mesh();
+	obj1->CreateMesh(vertices_piramide_triangular, indices_piramide_triangular, 12, 12);
+	meshList.push_back(obj1);
+
+}
 
 void CreateShaders()
 {
@@ -237,7 +263,6 @@ void CreateShaders()
 }
 
 
-
 int main()
 {
 	mainWindow = Window(1366, 768); // 1280, 1024 or 1024, 768
@@ -245,6 +270,7 @@ int main()
 
 	CreateObjects();
 	CreateShaders();
+	CrearPiramideTriangular();//índice 1 en MeshList
 
 	camera = Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -60.0f, 0.0f, 0.3f, 0.5f);
 
@@ -260,20 +286,11 @@ int main()
 	AgaveTexture.LoadTextureA();
 
 
+//	Se cargan todos los objetos 
 
+// ----------- Elementos Pinball -------------
 	Pinball = Model();
 	Pinball.LoadModel("Models/PINBALL_V4.obj");
-
-	CañoneraLAAT = Model();
-	CañoneraLAAT.LoadModel("Models/rep_la_at_gunship.obj");
-
-	FighterTank = Model();
-	FighterTank.LoadModel("Models/rep_hover_fightertank.obj");
-
-	ComandanteFordo = Model();
-	ComandanteFordo.LoadModel("Models/rep_inf_arctrooper.obj");
-
-	//Pinball.LoadModel("Models/PinballCompleto.obj");	//Si quieres ver el modelo completo (El vidrio no servirá)
 
 	Coin = Model();
 	Coin.LoadModel("Models/Coin.obj");
@@ -283,6 +300,36 @@ int main()
 
 	Tapa = Model();
 	Tapa.LoadModel("Models/Tapa.obj");
+
+	FlipperI = Model();
+	FlipperI.LoadModel("Models/hueso_FlipperIzquierda.obj");
+
+	FlipperD = Model();
+	FlipperD.LoadModel("Models/hueso_FlipperDerecha.obj");
+
+// ----------- Elementos Star Wars -------------
+	CañoneraLAAT = Model();
+	CañoneraLAAT.LoadModel("Models/rep_la_at_gunship.obj");
+
+	ComandanteFordo = Model();
+	ComandanteFordo.LoadModel("Models/rep_inf_arctrooper.obj");
+
+// ----------- Elementos Kirby -------------
+
+
+// ----------- Elementos Billy y Mandy -------------
+	Billy = Model();
+	Billy.LoadModel("Models/Billy.obj");
+
+	Grim = Model();
+	Grim.LoadModel("Models/Grim.obj");
+
+	Mandy = Model();
+	Mandy.LoadModel("Models/Mandy.obj");
+
+
+
+
 
 	std::vector<std::string> skyboxFaces;
 	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_rt.tga");
@@ -335,7 +382,7 @@ int main()
 	GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0, uniformEyePosition = 0,
 		uniformSpecularIntensity = 0, uniformShininess = 0;
 	GLuint uniformColor = 0;
-	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 2500.0f); //Campo de Visión
+	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 2000.0f); //Campo de Visión
 
 
 
@@ -363,7 +410,7 @@ int main()
 		if (mainWindow.getapagaLuzCocheD()) {
 			if (avanzaMoneda)
 			{
-				if (movMoneda < 100.0f)
+				if (movMoneda < 110.0f)
 				{
 					movMoneda += movMonedaOffset * deltaTime;
 					printf("avanza%f \n ", movMoneda);
@@ -376,7 +423,7 @@ int main()
 					if (avanzaCanica)
 					{
 						printf("ENTRASTE A LA CONDICION DE MOVCANICA  \n ");
-						if (movCanica < 205.0f)
+						if (movCanica < 410.0f)
 						{
 							printf("ENTRASTE A LA CONDICION DE MOVCANICA la que de \n ");
 							movCanica += movCanicaOffset * deltaTime;
@@ -444,13 +491,10 @@ int main()
 		shaderList[0].SetSpotLights(spotLights, spotLightCount);
 
 
-		// =========				DECLARACIÓN DE MATRIZ Y AUXILIARES
+
 		glm::mat4 model(1.0);
 		glm::mat4 modelaux(1.0);
-
-
 		glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
-
 
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(0.0f, -1.0f, 0.0f));
@@ -462,22 +506,46 @@ int main()
 		Material_opaco.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		meshList[2]->RenderMesh();
 
-		// =========				Instancias de dibujado de MODELOS y PRIMITIVAS			===============
-		
-		// =========				Relacionadas al PINBALL
-
-		///*
-		//Tablero de Pinball
+// ---------OBJETOS DE BILLY-----------
+		//Billy
 		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(0.0f, 25.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
+		model = glm::translate(model, glm::vec3(0.0f, 0.0f, -80.0f));
+		model = glm::scale(model, glm::vec3(5.0f, 5.0f, 5.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Pinball.RenderModel();
-		//*/
+		Billy.RenderModel();
 
+		//Grim
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(20.0f, 0.0f, -80.0f));
+		model = glm::scale(model, glm::vec3(5.0f, 5.0f, 5.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Grim.RenderModel();
+
+		//Grim
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(40.0f, 0.0f, -80.0f));
+		model = glm::scale(model, glm::vec3(5.0f, 5.0f, 5.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Mandy.RenderModel();
+
+// ---------OBJETOS DE STAR WARS-----------
+		//Cañonera
+		model = glm::mat4(1.0);
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		CañoneraLAAT.RenderModel();
+
+
+		//Comandante FORDO
+		model = glm::mat4(1.0);
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		ComandanteFordo.RenderModel();
+
+// --------- OBJETOS DE KIRBY -----------
+
+// --------- OBJETOS DE PINBALL -----------
 		//Monedita
 		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(-107.0f, 10.0f, 700.0f));
+		model = glm::translate(model, glm::vec3(200.0f, 10.0f, 700.0f));
 		model = glm::translate(model, glm::vec3(0.0f, 14.3f, -movMoneda));
 		model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::rotate(model, -rotMoneda * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -487,73 +555,123 @@ int main()
 
 		//Canica del Pinball
 		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(0.0f, 28.1f, 550.5f));
+		model = glm::translate(model, glm::vec3(0.0f, 28.1f, 350.5f));
 		model = glm::translate(model, glm::vec3(movCanica, 0.0f, 0.0f));
 		model = glm::rotate(model, -rotCanica * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(3.5f, 3.5f, 3.5f));
+		model = glm::scale(model, glm::vec3(3.0f, 3.0f, 3.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Canica.RenderModel();
 
-
-		// =========				Relacionadas a STAR WARS
-
-		//Cañonera 1
+		//Tablero de Pinball
 		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(124.0f, 274.8f, -420.0f));
-		model = glm::rotate(model, 90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model,15 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(0.85f, 0.85f, 0.85f));
+		model = glm::translate(model, glm::vec3(0.0f, 25.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		CañoneraLAAT.RenderModel();
+		Pinball.RenderModel();
 
-		//Cañonera 2
+		//------------ FLIPPER IZQUIERDO ----------------
 		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(124.0f, 252.5f, -335.0f));
-		model = glm::rotate(model, 90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, 15 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(0.85f, 0.85f, 0.85f));
+		model = glm::translate(model, glm::vec3(-90.0f, 40.0f, 427.0f));
+		model = glm::scale(model, glm::vec3(10.0f, 10.0f, 10.0f));
+		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		CañoneraLAAT.RenderModel();
+		FlipperI.RenderModel();
 
-		//Tanque
+		//------------ FLIPPER DERECHO ----------------
 		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(-100.0f, 255.8f, -350.0f));
-		model = glm::rotate(model, 180 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, -15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+		model = glm::translate(model, glm::vec3(30.0f, 37.0f, 423.0f));
+		model = glm::scale(model, glm::vec3(10.0f, 10.0f, 10.0f));
+		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		FighterTank.RenderModel();
+		FlipperD.RenderModel();
 
-
-		//Comandante FORDO
+		//PIRÁMIDES INFIERNO 
 		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(124.0f, 252.6f, -335.0f));
-		model = glm::rotate(model, 90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, 15 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(4.2f, 4.2f, 4.2f));
+		model = glm::translate(model, glm::vec3(-170.0f, 90.0f, 427.0f));
+		model = glm::scale(model, glm::vec3(40.0f, 40.0f, 40.0f));
+		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, 60 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		ComandanteFordo.RenderModel();
+		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
+		color = glm::vec3(1.0f, 0.0f, 0.0f);
+		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
+		meshList[0]->RenderMesh();
 
-
-
-		//Agave ¿qué sucede si lo renderizan antes del coche y el helicóptero?
 		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(0.0f, 1.0f, -4.0f));
-		model = glm::scale(model, glm::vec3(4.0f, 4.0f, 4.0f));
+		model = glm::translate(model, glm::vec3(-125.0f, 74.0f, 450.0f));
+		model = glm::scale(model, glm::vec3(30.0f, 30.0f, 30.0f));
+		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
+		color = glm::vec3(1.0f, 0.0f, 0.0f);
+		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
+		meshList[0]->RenderMesh();
+
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(-183.0f, 86.0f, 375.0f));
+		model = glm::scale(model, glm::vec3(25.0f, 25.0f, 25.0f));
+		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, 40 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
+		color = glm::vec3(1.0f, 0.0f, 0.0f);
+		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
+		meshList[0]->RenderMesh();
+
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(122.0f, 90.0f, 427.0f));
+		model = glm::scale(model, glm::vec3(40.0f, 40.0f, 40.0f));
+		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, 60 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
+		color = glm::vec3(1.0f, 0.0f, 0.0f);
+		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
+		meshList[0]->RenderMesh();
+
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(65.0f, 74.0f, 450.0f));
+		model = glm::scale(model, glm::vec3(30.0f, 30.0f, 30.0f));
+		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
+		color = glm::vec3(1.0f, 0.0f, 0.0f);
+		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
+		meshList[0]->RenderMesh();
+
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(130.0f, 86.0f, 375.0f));
+		model = glm::scale(model, glm::vec3(25.0f, 25.0f, 25.0f));
+		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, 80 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
+		color = glm::vec3(1.0f, 0.0f, 0.0f);
+		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
+		meshList[0]->RenderMesh();
 
 
-		//blending: transparencia o traslucidez
-		// ===========		PARA APLICAR TRANSPARENCIA: EL PODER DE LA TRANSPARENCIA DE OBJETOS EN LA PALMA DE MI MANO!!!!!!
+
+		//------------------- CRISTAL -------------------
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(0.0f, 24.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
+		color = glm::vec3(1.0f, 1.0f, 1.0f);
+		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		//AgaveTexture.UseTexture();
 		Tapa.RenderModel();
 		glDisable(GL_BLEND);
+
 
 		glUseProgram(0);
 
