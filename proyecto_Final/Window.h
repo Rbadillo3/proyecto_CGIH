@@ -13,7 +13,15 @@ public:
 	GLfloat getBufferHeight() { return bufferHeight; }
 	GLfloat getXChange();
 	GLfloat getYChange();
-	GLfloat getmuevex() { return muevex; }
+
+
+	//-- VARIABLES QUE SE UTILIZAN EN EL CÓDIGO ---- //
+	GLfloat getFlipperI() { return FlipperI; }
+	GLfloat getFlipperD() { return FlipperD; }
+	GLfloat getPalanca() { return Palanca; }
+
+	// ---------------------------------------------- //
+
 	GLboolean getapagaLuz() { return apagaluz; }	//Metodo para apagar la luz de Lampara
 	GLboolean getapagaLuz2() { return apagaluz2; }	//Metodo para apagar la luz de Lampara 2
 	GLboolean getapagaLuzControl() { return apagaluzControl; }	//Metodo para apagar la luz de Lamparas
@@ -49,7 +57,16 @@ private:
 	GLfloat lastY;
 	GLfloat xChange;
 	GLfloat yChange;
-	GLfloat muevex;
+	
+	//-- VARIABLES QUE SE UTILIZAN EN EL CÓDIGO ------ //
+	GLfloat FlipperD;
+	GLfloat FlipperI;
+	GLfloat Palanca; 
+
+
+
+	// ---------------------------------------------- //
+
 	GLboolean apagaluz;						//Variable de control de apagado de la lampara
 	GLboolean apagaluz2;					//Variable de control de apagado de la lampara 2
 	GLboolean apagaluzControl;					//Variable de control de apagado de la lampara control
