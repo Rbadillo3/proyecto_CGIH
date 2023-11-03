@@ -13,7 +13,15 @@ Window::Window(GLint windowWidth, GLint windowHeight)
 {
 	width = windowWidth;
 	height = windowHeight;
-	muevex = 2.0f;
+
+	//-- VARIABLES QUE SE UTILIZAN EN EL CÃ“DIGO ---- //
+	
+	FlipperD = 0.0f;
+	FlipperI = 0.0f;
+	Palanca = 0.0f;
+
+
+	// ---------------------------------------------- //
 	muevexCarro = 0.01f;
 	muevexCarroAdelante = 0.01f;
 	muevexCarroAtras = 0.01f;
@@ -33,10 +41,10 @@ Window::Window(GLint windowWidth, GLint windowHeight)
 }
 int Window::Initialise()
 {
-	//Inicialización de GLFW
+	//InicializaciÃ³n de GLFW
 	if (!glfwInit())
 	{
-		printf("Falló inicializar GLFW");
+		printf("FallÃ³ inicializar GLFW");
 		glfwTerminate();
 		return 1;
 	}
@@ -56,7 +64,7 @@ int Window::Initialise()
 		glfwTerminate();
 		return 1;
 	}
-	//Obtener tamaño de Buffer
+	//Obtener tamaÃ±o de Buffer
 	glfwGetFramebufferSize(mainWindow, &bufferWidth, &bufferHeight);
 
 	//asignar el contexto
@@ -71,7 +79,7 @@ int Window::Initialise()
 
 	if (glewInit() != GLEW_OK)
 	{
-		printf("Falló inicialización de GLEW");
+		printf("FallÃ³ inicializaciÃ³n de GLEW");
 		glfwDestroyWindow(mainWindow);
 		glfwTerminate();
 		return 1;
@@ -82,7 +90,7 @@ int Window::Initialise()
 							 
 							 //Asignar Viewport
 	glViewport(0, 0, bufferWidth, bufferHeight);
-	//Callback para detectar que se está usando la ventana
+	//Callback para detectar que se estÃ¡ usando la ventana
 	glfwSetWindowUserPointer(mainWindow, this);
 }
 
@@ -117,7 +125,7 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 		glfwSetWindowShouldClose(window, GL_TRUE);
 	}
 
-	//Para articulación de la rueda (Movimiento)
+	//Para articulaciÃ³n de la rueda (Movimiento)
 	if (key == GLFW_KEY_Y)		//Adelante
 	{
 		theWindow->articulacion1 += 10.0;
@@ -186,16 +194,42 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 		theWindow->apagaluzLinterna = !(theWindow->apagaluzLinterna);
 	}
 
-
+	// ---- MOVIMIENTO DE LOS FLIPPERS ------- //
 
 	if (key == GLFW_KEY_1)
 	{
-		theWindow-> muevex += 1.0;
+		if (theWindow->FlipperI >= 55.0) {
+
+			theWindow->FlipperI = 0.0f;
+		}
+		else {
+			theWindow->FlipperI += 55.0;
+		}
 	}
+
 	if (key == GLFW_KEY_2)
 	{
-		theWindow-> muevex -= 1.0;
+		if (theWindow->FlipperD >= 55.0) {
+		
+			theWindow->FlipperD = 0.0f;
+		}
+		else {
+			theWindow->FlipperD += 55.0;
+		}
 	}
+
+	if (key == GLFW_KEY_3)
+	{
+		if (theWindow->Palanca >= 55.0) {
+
+			theWindow->Palanca = 0.0f;
+		}
+		else {
+			theWindow->Palanca += 5.0;
+		}
+	}
+
+	// ---------------------------------------------- //
 
 	if (key == GLFW_KEY_Y)
 	{
