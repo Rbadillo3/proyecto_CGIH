@@ -45,6 +45,11 @@ Integrantes:
 #include "Material.h"
 const float toRadians = 3.14159265f / 180.0f;
 
+//Para implementación de audio
+
+//#include <irrKlang.h>
+//using namespace irrklang;
+
 // =========				Variables de control para animación				===============
 
 //====	Moneda
@@ -56,11 +61,18 @@ bool avanzaMoneda;
 
 //====	Canica
 float movCanicaY;
-float movCanica;
+float movCanicaZ;
+float movCanicaX;
+float movPalanca;
+float movPalancaOffset;
 float movCanicaOffset;
 float rotCanica;
 float rotCanicaOffset;
-bool avanzaCanica;
+
+bool avanzaCanicaX;
+bool avanzaCanicaY;
+bool avanzaCanicaZ;
+bool palancaLista;
 
 float movOffset;
 bool avanza;
@@ -104,6 +116,7 @@ Model FlipperI;
 Model FlipperD;
 Model Base_Palanca;
 Model Palanca;
+Model Resorte;
 
 
 
@@ -316,6 +329,9 @@ int main()
 	Palanca = Model();
 	Palanca.LoadModel("Models/palanca.obj");
 
+	Resorte = Model();
+	Resorte.LoadModel("Models/spring.obj");
+
 
 	// ----------- Elementos Star Wars -------------
 	CañoneraLAAT = Model();
@@ -405,12 +421,18 @@ int main()
 	rotMonedaOffset = 5.0f;
 	avanzaMoneda = true;
 
-	movCanica = 0.0f;
+	movCanicaX = 0.0f;
 	movCanicaY = 0.0f;
+	movCanicaZ = 0.0f;
+	movPalanca = 0.0f;
 	movCanicaOffset = 3.75f;
 	rotCanica = 0.0f;
 	rotCanicaOffset = 5.0f;
-	avanzaCanica = false;
+	avanzaCanicaX = false;
+	avanzaCanicaY = false;
+	avanzaCanicaZ = false;
+	movPalancaOffset = 0.15f;
+	palancaLista = false;
 
 	////Loop mientras no se cierra la ventana
 	while (!mainWindow.getShouldClose())
@@ -432,12 +454,61 @@ int main()
 				}
 				else
 				{
-					avanzaCanica = true;
+					avanzaMoneda = false;
+					avanzaCanicaZ =true;
 					
 				}
 			}
 		}
 
+		if (avanzaCanicaZ == true) {
+			//printf("avanza la canica PA ARRIBA%f \n ", movMoneda);
+			if (movCanicaZ < 35.0f) {
+				movCanicaZ += movCanicaOffset * deltaTime;
+				printf("avanza%f \n ", movMoneda);
+				rotCanica += rotCanicaOffset * deltaTime;
+			}
+			else
+			{
+				avanzaCanicaZ = false;
+				avanzaCanicaX = true;
+			}
+		}
+
+		if (avanzaCanicaX == true) {
+			printf("avanza la canica PA LA DERECHA%f \n ", movMoneda);
+			if (movCanicaX < 205.0f) {
+				movCanicaX += movCanicaOffset * deltaTime;
+				printf("avanza%f \n ", movMoneda);
+				rotCanica += rotCanicaOffset * deltaTime;
+			}
+			else
+			{
+				avanzaCanicaX = false;
+				palancaLista = true;
+
+			}
+		}
+
+		if (palancaLista == true) {
+			if (mainWindow.getActivaPalanca()==true) {
+				if (movPalanca < 12.0f) {
+					movPalanca += movPalancaOffset * deltaTime;
+					printf("avanza la palanca con un valor de : %f \n ", movPalanca);
+				}
+				else {
+					printf("La palanca alcanzo su valor máximo de estiramiento\n");
+					palancaLista = false;
+				}
+			}
+			/*
+			else if(mainWindow.getActivaPalanca() == false)
+			{
+				movPalanca = 0.0f;
+			}
+			*/
+
+		}
 
 
 		if (mainWindow.getapagaLuzCocheT()) {
@@ -447,7 +518,7 @@ int main()
 			rotMoneda = 0.0f;
 			rotMonedaOffset = 5.0f;
 
-			movCanica = 0.0f;
+			movCanicaX = 0.0f;
 			movCanicaOffset = 3.75f;
 			rotCanica = 0.0f;
 			rotCanicaOffset = 5.0f;
@@ -516,14 +587,14 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Billy.RenderModel();
 
-		//Grim
+		//Grim (Puro Hueso pa los compas)
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(20.0f, 0.0f, -80.0f));
 		model = glm::scale(model, glm::vec3(5.0f, 5.0f, 5.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Grim.RenderModel();
 
-		//Grim
+		//Mandy
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(40.0f, 0.0f, -80.0f));
 		model = glm::scale(model, glm::vec3(5.0f, 5.0f, 5.0f));
@@ -598,11 +669,24 @@ int main()
 		//Palanca de Pinball
 		model = modelaux;
 		model = glm::translate(model, glm::vec3(-1.5f, 1.35f, -13.5f));
+		modelaux = model;
+		model = glm::translate(model, glm::vec3(0.0f, 0.0f, movPalanca));
 		model = glm::rotate(model, -80 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, -10 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(10.0f, 10.0f, 10.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Palanca.RenderModel();
+
+		//Resorte
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(0.0f, 10.35f, -20.5f));
+		model = glm::rotate(model, -90 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(4.0f, 5.2f-(movPalanca/3), 4.0f));
+		//model = glm::scale(model, glm::vec3(1.0f, movPalanca, 1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Resorte.RenderModel();
+
+
 
 
 		//Monedita
@@ -617,9 +701,10 @@ int main()
 
 		//Canica del Pinball
 		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(0.0f, 28.1f, 550.5f));
-		model = glm::translate(model, glm::vec3(movCanica, 0.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(0.0f, 42.5f, 545.5f));
+		model = glm::translate(model, glm::vec3(movCanicaX, 0.0f, -movCanicaZ));
 		model = glm::rotate(model, -rotCanica * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::rotate(model, -rotCanica * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(3.5f, 3.5f, 3.5f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Canica.RenderModel();
@@ -642,7 +727,7 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		FlipperD.RenderModel();
 
-		//PIRÁMIDES INFIERNO 
+		//PIRÁMIDES  TEMARICAS DEL INFIERNO 
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(-170.0f, 90.0f, 427.0f));
 		model = glm::scale(model, glm::vec3(40.0f, 40.0f, 40.0f));
@@ -715,7 +800,7 @@ int main()
 
 
 
-		//------------------- CRISTAL -------------------
+		//------------------- CRISTAL TRANSPARENTE -------------------
 		modelaux = model;
 		model = modelauxCuerpoPinball;
 		model = glm::translate(model, glm::vec3(0.0f, 1.0f, -2.0f));
