@@ -15,11 +15,12 @@ Window::Window(GLint windowWidth, GLint windowHeight)
 	height = windowHeight;
 
 	//-- VARIABLES QUE SE UTILIZAN EN EL CÓDIGO ---- //
-	
+
 	FlipperD = 0.0f;
 	FlipperI = 0.0f;
 	Palanca = 0.0f;
-
+	MonedaPinball = false;	
+	ActivaPalanca = false;
 
 	// ---------------------------------------------- //
 	muevexCarro = 0.01f;
@@ -86,9 +87,9 @@ int Window::Initialise()
 	}
 
 	glEnable(GL_DEPTH_TEST); //HABILITAR BUFFER DE PROFUNDIDAD
-							 // Asignar valores de la ventana y coordenadas
-							 
-							 //Asignar Viewport
+	// Asignar valores de la ventana y coordenadas
+
+	//Asignar Viewport
 	glViewport(0, 0, bufferWidth, bufferHeight);
 	//Callback para detectar que se está usando la ventana
 	glfwSetWindowUserPointer(mainWindow, this);
@@ -175,13 +176,22 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 
 	if (key == GLFW_KEY_1 && action == GLFW_PRESS)
 	{
-		theWindow->apagaluzCocheD = !(theWindow->apagaluzCocheD);
+		theWindow->MonedaPinball = !(theWindow->MonedaPinball);
 	}
 
-	if (key == GLFW_KEY_2 && action == GLFW_PRESS)
-	{
-		theWindow->apagaluzCocheT = !(theWindow->apagaluzCocheT);
+
+	if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS) {
+		// Ejecutar la acción mientras se mantiene presionada la tecla "6"
+		theWindow->ActivaPalanca = true;
 	}
+	else 
+	{
+		// Realizar cualquier otra acción cuando la tecla se suelta
+		theWindow->ActivaPalanca = false;
+	}
+
+
+
 
 
 	if (key == GLFW_KEY_N && action == GLFW_PRESS)
@@ -196,7 +206,7 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 
 	// ---- MOVIMIENTO DE LOS FLIPPERS ------- //
 
-	if (key == GLFW_KEY_1)
+	if (key == GLFW_KEY_3)
 	{
 		if (theWindow->FlipperI >= 55.0) {
 
@@ -207,10 +217,10 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 		}
 	}
 
-	if (key == GLFW_KEY_2)
+	if (key == GLFW_KEY_4)
 	{
 		if (theWindow->FlipperD >= 55.0) {
-		
+
 			theWindow->FlipperD = 0.0f;
 		}
 		else {
