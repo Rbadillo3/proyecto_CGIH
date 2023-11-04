@@ -19,6 +19,10 @@ public:
 	GLfloat getFlipperI() { return FlipperI; }
 	GLfloat getFlipperD() { return FlipperD; }
 	GLfloat getPalanca() { return Palanca; }
+	GLfloat getMonedaPinball() { return MonedaPinball; }
+	GLfloat getActivaPalanca() { return ActivaPalanca; }
+
+
 
 	// ---------------------------------------------- //
 
@@ -57,12 +61,13 @@ private:
 	GLfloat lastY;
 	GLfloat xChange;
 	GLfloat yChange;
-	
+
 	//-- VARIABLES QUE SE UTILIZAN EN EL CÓDIGO ------ //
 	GLfloat FlipperD;
 	GLfloat FlipperI;
-	GLfloat Palanca; 
-
+	GLfloat Palanca;
+	GLfloat MonedaPinball;
+	GLfloat ActivaPalanca;
 
 
 	// ---------------------------------------------- //
@@ -91,4 +96,3 @@ private:
 	static void ManejaMouse(GLFWwindow* window, double xPos, double yPos);
 
 };
-
