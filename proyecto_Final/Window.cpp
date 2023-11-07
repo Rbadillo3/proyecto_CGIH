@@ -21,7 +21,7 @@ Window::Window(GLint windowWidth, GLint windowHeight)
 	Palanca = 0.0f;
 	MonedaPinball = false;	
 	ActivaPalanca = false;
-
+	CamaraVis = 1;
 	// ---------------------------------------------- //
 	muevexCarro = 0.01f;
 	muevexCarroAdelante = 0.01f;
@@ -40,6 +40,8 @@ Window::Window(GLint windowWidth, GLint windowHeight)
 		keys[i] = 0;
 	}
 }
+
+
 int Window::Initialise()
 {
 	//Inicialización de GLFW
@@ -163,7 +165,7 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 		theWindow->apagaluz = !(theWindow->apagaluz);
 	}
 
-	if (key == GLFW_KEY_C && action == GLFW_PRESS)
+	if (key == GLFW_KEY_L && action == GLFW_PRESS)
 	{
 		theWindow->apagaluz2 = !(theWindow->apagaluz2);
 	}
@@ -189,7 +191,6 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 		// Realizar cualquier otra acción cuando la tecla se suelta
 		theWindow->ActivaPalanca = false;
 	}
-
 
 
 
@@ -243,13 +244,13 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 
 	if (key == GLFW_KEY_Y)
 	{
-		theWindow->muevexCarro += 0.75;
+		theWindow->CamaraVis = 1;
 
 
 	}
 	if (key == GLFW_KEY_U)
 	{
-		theWindow->muevexCarro -= 0.75;
+		theWindow->CamaraVis = 2;
 	}
 
 
