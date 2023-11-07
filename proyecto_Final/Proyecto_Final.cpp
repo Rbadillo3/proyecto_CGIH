@@ -371,15 +371,15 @@ int main()
 	const char* mp3FilePath = "Models/Kirby_s-Pinball-Land-Title-Theme.wav";
 
 	// Reproduce el archivo WAV
-	/*
-	
+	///*
+
 	ISound* sound = soundEngine->play2D(mp3FilePath, true, false, true);
 
 	if (!sound) {
 		// Manejo de error si no se pudo reproducir el archivo
 		return 1;
 	}
-	*/
+	//*/
 
 	// Espera
 
@@ -481,8 +481,8 @@ int main()
 				else
 				{
 					avanzaMoneda = false;
-					avanzaCanicaZ =true;
-					
+					avanzaCanicaZ = true;
+
 				}
 			}
 		}
@@ -517,7 +517,7 @@ int main()
 		}
 
 		if (palancaLista == true) {
-			if (mainWindow.getActivaPalanca()==true) {
+			if (mainWindow.getActivaPalanca() == true) {
 				if (movPalanca < 12.0f) {
 					movPalanca += movPalancaOffset * deltaTime;
 					printf("avanza la palanca con un valor de : %f \n ", movPalanca);
@@ -693,7 +693,7 @@ int main()
 		//Tablero de Pinball
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(0.0f, 25.0f, 0.0f));
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, -movMoneda));
+		//model = glm::translate(model, glm::vec3(0.0f, 0.0f, -movMoneda));
 		modelaux = model;
 		modelauxCuerpoPinball = model;
 		model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
@@ -726,7 +726,7 @@ int main()
 		model = modelaux;
 		model = glm::translate(model, glm::vec3(0.0f, 10.35f, -20.5f));
 		model = glm::rotate(model, -90 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(4.0f, 5.2f-(movPalanca/3), 4.0f));
+		model = glm::scale(model, glm::vec3(4.0f, 5.2f - (movPalanca / 3), 4.0f));
 		//model = glm::scale(model, glm::vec3(1.0f, movPalanca, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Resorte.RenderModel();
@@ -755,8 +755,8 @@ int main()
 		Canica.RenderModel();
 
 		//------------ FLIPPER IZQUIERDO ----------------
-		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(-90.0f, 40.0f, 427.0f));
+		model = modelauxCuerpoPinball;
+		model = glm::translate(model, glm::vec3(-90.0f, 19.0f, 427.0f));
 		model = glm::scale(model, glm::vec3(10.0f, 10.0f, 10.0f));
 		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(mainWindow.getFlipperI()), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -764,8 +764,8 @@ int main()
 		FlipperI.RenderModel();
 
 		//------------ FLIPPER DERECHO ----------------
-		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(30.0f, 37.0f, 423.0f));
+		model = modelauxCuerpoPinball;
+		model = glm::translate(model, glm::vec3(30.0f, 20.0f, 423.0f));
 		model = glm::scale(model, glm::vec3(10.0f, 10.0f, 10.0f));
 		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(mainWindow.getFlipperD()), glm::vec3(0.0f, -1.0f, 0.0f));
@@ -776,7 +776,7 @@ int main()
 
 		// --Sección Izquierda de Pirámides
 		//Pirámide Central
-		modelaux = model;
+		
 		model = modelauxCuerpoPinball;
 		model = glm::translate(model, glm::vec3(-170.0f, 62.8f, 427.0f));
 		model = glm::scale(model, glm::vec3(40.0f, 40.0f, 40.0f));
@@ -790,7 +790,7 @@ int main()
 		meshList[0]->RenderMesh();
 
 		//Piramide Flipper
-		modelaux = model;
+		
 		model = modelauxCuerpoPinball;
 		model = glm::translate(model, glm::vec3(-125.0f, 44.9f, 450.0f));
 		modelauxFlipper = model;
@@ -806,7 +806,7 @@ int main()
 
 
 		//Extremo izq
-		modelaux = model;
+		
 		model = modelauxCuerpoPinball;
 		model = glm::translate(model, glm::vec3(-183.0f, 62.0f, 375.0f));
 		model = glm::scale(model, glm::vec3(25.0f, 25.0f, 25.0f));
@@ -821,7 +821,7 @@ int main()
 
 		// --Sección Derecha de Pirámides
 		//Pirámide Central
-		modelaux = model;
+		
 		model = modelauxCuerpoPinball;
 		model = glm::translate(model, glm::vec3(122.0f, 62.8f, 427.0f));
 		model = glm::scale(model, glm::vec3(40.0f, 40.0f, 40.0f));
