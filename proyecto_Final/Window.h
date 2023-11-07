@@ -22,6 +22,7 @@ public:
 	GLfloat getMonedaPinball() { return MonedaPinball; }
 	GLfloat getActivaPalanca() { return ActivaPalanca; }
 
+	int getCamaraVis() { return CamaraVis; }
 
 
 	// ---------------------------------------------- //
@@ -68,7 +69,7 @@ private:
 	GLfloat Palanca;
 	GLfloat MonedaPinball;
 	GLfloat ActivaPalanca;
-
+	int CamaraVis;
 
 	// ---------------------------------------------- //
 
