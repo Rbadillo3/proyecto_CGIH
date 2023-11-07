@@ -1,8 +1,8 @@
 /*
-UNIVERSIDAD NACIONAL AUTÓNOMA DE MÉXICO
+UNIVERSIDAD NACIONAL AUT�NOMA DE M�XICO
 FACULTAD DE INGENIERIA
 Proyecto Final: Tablero de Pinball
-Grupo de Teoría: 04
+Grupo de Teor�a: 04
 Integrantes:
 -Alvarez Badillo Rodrigo
 -Arriaga Vitela Carlos Eduardo
@@ -37,7 +37,7 @@ Integrantes:
 #include"Model.h"
 #include "Skybox.h"
 
-//para iluminación
+//para iluminaci�n
 #include "CommonValues.h"
 #include "DirectionalLight.h"
 #include "PointLight.h"
@@ -45,12 +45,12 @@ Integrantes:
 #include "Material.h"
 const float toRadians = 3.14159265f / 180.0f;
 
-//Para implementación de audio
+//Para implementaci�n de audio
 
 //#include <irrKlang.h>
 //using namespace irrklang;
 
-// =========				Variables de control para animación				===============
+// =========				Variables de control para animaci�n				===============
 
 //========== Dia y noche =====
 float contadorDiaNoche = 0.0f;
@@ -81,12 +81,18 @@ bool palancaLista;
 float movOffset;
 bool avanza;
 
+// ========= Camara ===============
+int numCam;
+bool CamaraActual;
+
 
 Window mainWindow;
 std::vector<Mesh*> meshList;
 std::vector<Shader> shaderList;
 
 Camera camera;
+Camera staticCamera;
+Camera cameraF;
 
 Texture brickTexture;
 Texture dirtTexture;
@@ -99,7 +105,7 @@ Texture white;
 
 
 //====	Star Wars
-Model CañoneraLAAT;
+Model Ca�oneraLAAT;
 Model ComandanteFordo;
 Model FighterTank;
 
@@ -150,7 +156,7 @@ static const char* vShader = "shaders/shader_light.vert";
 static const char* fShader = "shaders/shader_light.frag";
 
 
-//función de calculo de normales por promedio de vértices 
+//funci�n de calculo de normales por promedio de v�rtices 
 void calcAverageNormals(unsigned int* indices, unsigned int indiceCount, GLfloat* vertices, unsigned int verticeCount,
 	unsigned int vLength, unsigned int normalOffset)
 {
@@ -252,7 +258,7 @@ void CreateObjects()
 
 }
 
-// Pirámide triangular regular
+// Pir�mide triangular regular
 void CrearPiramideTriangular()
 {
 	unsigned int indices_piramide_triangular[] = {
@@ -290,9 +296,18 @@ int main()
 
 	CreateObjects();
 	CreateShaders();
-	CrearPiramideTriangular();//índice 1 en MeshList
+	CrearPiramideTriangular();//�ndice 1 en MeshList
 
 	camera = Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -60.0f, 0.0f, 0.3f, 0.5f);
+
+	Camera staticCamera(
+			glm::vec3(0.0f, 400.0f, 1500.0f), // Posición de la cámara estática
+			glm::vec3(0.0f, 1.0f, 0.0f),      // Vector 'up' de la cámara estática
+			-90.0f,                            // Yaw ajustado a 45 grados hacia la derecha desde el eje negativo de X
+			5.0f,                              // Pitch inicial
+			5.0f,                              // Velocidad de movimiento (no utilizada para la cámara estática)
+			1.0f                               // Velocidad de giro (no utilizada para la cámara estática)
+		);
 
 	brickTexture = Texture("Textures/brick.png");
 	brickTexture.LoadTextureA();
@@ -338,8 +353,8 @@ int main()
 
 
 	// ----------- Elementos Star Wars -------------
-	CañoneraLAAT = Model();
-	CañoneraLAAT.LoadModel("Models/rep_la_at_gunship.obj");
+	Ca�oneraLAAT = Model();
+	Ca�oneraLAAT.LoadModel("Models/rep_la_at_gunship.obj");
 
 	FighterTank = Model();
 	FighterTank.LoadModel("Models/rep_hover_fightertank.obj");
@@ -378,13 +393,13 @@ int main()
 	Material_opaco = Material(0.3f, 4);
 
 
-	//luz direccional, sólo 1 y siempre debe de existir
+	//luz direccional, s�lo 1 y siempre debe de existir
 	mainLight = DirectionalLight(1.0f, 1.0f, 1.0f,
 		0.3f, 0.3f,
 		0.0f, 0.0f, -1.0f);
 	//contador de luces puntuales
 	unsigned int pointLightCount = 0;
-	//Declaración de primer luz puntual
+	//Declaraci�n de primer luz puntual
 	pointLights[0] = PointLight(1.0f, 0.0f, 0.0f,
 		0.0f, 1.0f,
 		-6.0f, 1.5f, 1.5f,
@@ -415,9 +430,11 @@ int main()
 	GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0, uniformEyePosition = 0,
 		uniformSpecularIntensity = 0, uniformShininess = 0;
 	GLuint uniformColor = 0;
-	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 2500.0f); //Campo de Visión
+	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 2500.0f); //Campo de Visi�n
 
-
+	contadorDiaNoche = 0.0f;
+	
+	CamaraActual = true;
 
 	movMoneda = 0.0f;
 	movMonedaOffset = 0.55f;
@@ -438,6 +455,7 @@ int main()
 	movPalancaOffset = 0.15f;
 	palancaLista = false;
 
+
 	////Loop mientras no se cierra la ventana
 	while (!mainWindow.getShouldClose())
 	{
@@ -445,6 +463,16 @@ int main()
 		deltaTime = now - lastTime;
 		deltaTime += (now - lastTime) / limitFPS;
 		lastTime = now;
+
+		// =========== CAMARA ============
+		if (mainWindow.getCamaraVis() == 1) {
+			camera.keyControl(mainWindow.getsKeys(), deltaTime);
+			camera.mouseControl(mainWindow.getXChange(), mainWindow.getYChange());
+		}
+		if (mainWindow.getCamaraVis() == 2){
+			camera = staticCamera;
+		}
+	
 
 
 		if (mainWindow.getMonedaPinball()) {
@@ -459,8 +487,8 @@ int main()
 				else
 				{
 					avanzaMoneda = false;
-					avanzaCanicaZ =true;
-					
+					avanzaCanicaZ = true;
+
 				}
 			}
 		}
@@ -495,13 +523,13 @@ int main()
 		}
 
 		if (palancaLista == true) {
-			if (mainWindow.getActivaPalanca()==true) {
+			if (mainWindow.getActivaPalanca() == true) {
 				if (movPalanca < 12.0f) {
 					movPalanca += movPalancaOffset * deltaTime;
 					printf("avanza la palanca con un valor de : %f \n ", movPalanca);
 				}
 				else {
-					printf("La palanca alcanzo su valor máximo de estiramiento\n");
+					printf("La palanca alcanzo su valor m�ximo de estiramiento\n");
 					palancaLista = false;
 				}
 			}
@@ -543,11 +571,10 @@ int main()
 		//printf("\nContador = %f", contadorDiaNoche);
 		mainLight.ChangeDiffuseAmbient(contadorDiaNoche, 0.3);
 
-
 		//Recibir eventos del usuario
 		glfwPollEvents();
-		camera.keyControl(mainWindow.getsKeys(), deltaTime);
-		camera.mouseControl(mainWindow.getXChange(), mainWindow.getYChange());
+
+	
 
 		// Clear the window
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -560,7 +587,7 @@ int main()
 		uniformEyePosition = shaderList[0].GetEyePositionLocation();
 		uniformColor = shaderList[0].getColorLocation();
 
-		//información en el shader de intensidad especular y brillo
+		//informaci�n en el shader de intensidad especular y brillo
 		uniformSpecularIntensity = shaderList[0].GetSpecularIntensityLocation();
 		uniformShininess = shaderList[0].GetShininessLocation();
 
@@ -568,19 +595,19 @@ int main()
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
 		glUniform3f(uniformEyePosition, camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
 
-		// luz ligada a la cámara de tipo flash
-		//sirve para que en tiempo de ejecución (dentro del while) se cambien propiedades de la luz
+		// luz ligada a la c�mara de tipo flash
+		//sirve para que en tiempo de ejecuci�n (dentro del while) se cambien propiedades de la luz
 		glm::vec3 lowerLight = camera.getCameraPosition();
 		lowerLight.y -= 0.3f;
 		spotLights[0].SetFlash(lowerLight, camera.getCameraDirection());
 
-		//información al shader de fuentes de iluminación
-		shaderList[0].SetDirectionalLight(&mainLight);
+		//informaci�n al shader de fuentes de iluminaci�n
+		
 		shaderList[0].SetPointLights(pointLights, pointLightCount);
 		shaderList[0].SetSpotLights(spotLights, spotLightCount);
 
 
-		// -----------= Definición de Matrices y Matrices de Apoyo =-------------
+		// -----------= Definici�n de Matrices y Matrices de Apoyo =-------------
 		glm::mat4 model(1.0);
 		glm::mat4 modelaux(1.0);
 		glm::mat4 modelauxCuerpoPinball(1.0);
@@ -621,23 +648,23 @@ int main()
 		Mandy.RenderModel();
 
 		// ---------OBJETOS DE STAR WARS-----------
-		//Cañonera 1
+		//Ca�onera 1
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(124.0f, 274.8f, -420.0f));
 		model = glm::rotate(model, 90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, 15 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(0.85f, 0.85f, 0.85f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		CañoneraLAAT.RenderModel();
+		Ca�oneraLAAT.RenderModel();
 
-		//Cañonera 2
+		//Ca�onera 2
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(124.0f, 252.5f, -335.0f));
 		model = glm::rotate(model, 90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, 15 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(0.85f, 0.85f, 0.85f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		CañoneraLAAT.RenderModel();
+		Ca�oneraLAAT.RenderModel();
 
 		//Tanque
 		model = glm::mat4(1.0);
@@ -700,7 +727,7 @@ int main()
 		model = modelaux;
 		model = glm::translate(model, glm::vec3(0.0f, 10.35f, -20.5f));
 		model = glm::rotate(model, -90 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(4.0f, 5.2f-(movPalanca/3), 4.0f));
+		model = glm::scale(model, glm::vec3(4.0f, 5.2f - (movPalanca / 3), 4.0f));
 		//model = glm::scale(model, glm::vec3(1.0f, movPalanca, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Resorte.RenderModel();
@@ -746,7 +773,7 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		FlipperD.RenderModel();
 
-		//PIRÁMIDES  TEMARICAS DEL INFIERNO 
+		//PIR�MIDES  TEMARICAS DEL INFIERNO 
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(-170.0f, 90.0f, 427.0f));
 		model = glm::scale(model, glm::vec3(40.0f, 40.0f, 40.0f));
@@ -754,7 +781,6 @@ int main()
 		model = glm::rotate(model, 60 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
-		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
 		color = glm::vec3(1.0f, 0.0f, 0.0f);
 		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
 		meshList[0]->RenderMesh();
@@ -765,7 +791,6 @@ int main()
 		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
-		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
 		color = glm::vec3(1.0f, 0.0f, 0.0f);
 		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
 		meshList[0]->RenderMesh();
@@ -777,7 +802,6 @@ int main()
 		model = glm::rotate(model, 40 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
-		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
 		color = glm::vec3(1.0f, 0.0f, 0.0f);
 		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
 		meshList[0]->RenderMesh();
@@ -789,7 +813,6 @@ int main()
 		model = glm::rotate(model, 60 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
-		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
 		color = glm::vec3(1.0f, 0.0f, 0.0f);
 		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
 		meshList[0]->RenderMesh();
@@ -800,7 +823,6 @@ int main()
 		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
-		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
 		color = glm::vec3(1.0f, 0.0f, 0.0f);
 		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
 		meshList[0]->RenderMesh();
@@ -812,7 +834,6 @@ int main()
 		model = glm::rotate(model, 80 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
-		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
 		color = glm::vec3(1.0f, 0.0f, 0.0f);
 		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
 		meshList[0]->RenderMesh();
@@ -834,8 +855,8 @@ int main()
 		Tapa.RenderModel();
 		glDisable(GL_BLEND);
 
-
 		shaderList[0].SetDirectionalLight(&mainLight);
+
 		glUseProgram(0);
 
 		mainWindow.swapBuffers();
