@@ -22,6 +22,11 @@ void DirectionalLight::UseLight(GLfloat ambientIntensityLocation, GLfloat ambien
 	glUniform1f(diffuseIntensityLocation, diffuseIntensity);
 }
 
+void DirectionalLight::ChangeDiffuseAmbient(GLfloat aIntensity, GLfloat dIntensity) {
+	this->setAmbienIntensity(aIntensity);
+	this->setDiffuseIntensity(dIntensity);
+}
+
 DirectionalLight::~DirectionalLight()
 {
 }
