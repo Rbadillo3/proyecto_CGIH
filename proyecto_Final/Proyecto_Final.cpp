@@ -292,7 +292,25 @@ int main()
 	CreateShaders();
 	CrearPiramideTriangular();//índice 1 en MeshList
 
-	camera = Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -60.0f, 0.0f, 0.3f, 0.5f);
+	// ================ CÁMARAS ================================
+Camera dynamicCamera(
+	glm::vec3(0.0f, 0.0f, 0.0f), 
+	glm::vec3(0.0f, 1.0f, 0.0f), 
+	-60.0f, 
+	0.0f, 
+	0.3f, 
+	0.5f);
+
+Camera staticCamera(
+	glm::vec3(0.0f, 1600.0f, 1125.0f), // Posición de la cámara en el eje Y sobre el origen
+	glm::vec3(0.0f, 1.0f, 0.0f),  // Mirando hacia abajo en el eje Y
+	-90.0f,                               // Yaw de 45 grados para rotar la cámara
+	-50.0f,                          // Pitch a -90 grados para mirar hacia abajo
+	0.0f,                           // La velocidad de movimiento no es relevante para la cámara estática
+	0.0f                            // La velocidad de giro tampoco es relevante para la cámara estática
+);
+
+Camera * camera = &dynamicCamera; 
 
 	brickTexture = Texture("Textures/brick.png");
 	brickTexture.LoadTextureA();
@@ -468,7 +486,21 @@ int main()
 		deltaTime += (now - lastTime) / limitFPS;
 		lastTime = now;
 
-
+		// =========== SELECCIÓN DE CÁMARA ============
+		if (mainWindow.getCamaraVis() == 1) {
+			
+			camera = &dynamicCamera;
+			camera->keyControl(mainWindow.getsKeys(), deltaTime);
+			camera->mouseControl(mainWindow.getXChange(), mainWindow.getYChange());
+		}
+		else if (mainWindow.getCamaraVis() == 2) {
+			camera = &staticCamera; // Cambiar a la cámara estática
+		}
+		
+		
+		glm::mat4 viewMatrix = camera->calculateViewMatrix();
+		// Usar viewMatrix para tus transformaciones y enviarla a los shaders
+				
 		if (mainWindow.getMonedaPinball()) {
 			if (avanzaMoneda)
 			{
