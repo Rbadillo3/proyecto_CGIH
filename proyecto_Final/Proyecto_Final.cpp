@@ -47,8 +47,8 @@ const float toRadians = 3.14159265f / 180.0f;
 
 //Para implementación de audio
 
-#include <irrKlang.h>
-using namespace irrklang;
+//#include <irrKlang.h>
+//using namespace irrklang;
 
 // =========				Variables de control para animación				===============
 
@@ -82,25 +82,6 @@ float movOffset;
 bool avanza;
 
 
-//Variables enfocadas en la animación de Textura DE PUNTAJE
-int valorUnidades;
-int valorDecenas;
-float cambianum;
-float movTextura;
-float velTextura;
-float toffsetflechau = 0.0f;
-float toffsetflechav = 0.0f;
-float toffsetnumerou = 0.0f;
-float toffsetnumerov = 0.0f;
-float toffsetnumerocambiau = 0.0;
-float angulovaria = 0.0f;
-
-
-//Para las decenas
-float valorCoordUDecenas;
-float valorCoordVDecenas;
-float coordU;
-float coordV;
 
 Window mainWindow;
 std::vector<Mesh*> meshList;
@@ -114,7 +95,6 @@ Texture plainTexture;
 Texture pisoTexture;
 Texture AgaveTexture;
 Texture white;
-Texture NumerosTexture;
 
 // =========				Variables de MODELOS				===============
 
@@ -131,6 +111,12 @@ Model FighterTank;
 Model Billy;
 Model Grim;
 Model Mandy;
+Model Prisionero;
+Model Ojo;
+Model Mano;
+Model Roca;
+Model Lava;
+
 
 //====	Elementos del PINBALL
 Model Pinball;
@@ -142,7 +128,6 @@ Model FlipperD;
 Model Base_Palanca;
 Model Palanca;
 Model Resorte;
-Model FlipperSable;
 
 
 
@@ -230,6 +215,7 @@ void CreateObjects()
 		-10.0f, 0.0f, 10.0f,	0.0f, 10.0f,	0.0f, -1.0f, 0.0f,
 		10.0f, 0.0f, 10.0f,		10.0f, 10.0f,	0.0f, -1.0f, 0.0f
 	};
+
 	unsigned int vegetacionIndices[] = {
 	   0, 1, 2,
 	   0, 2, 3,
@@ -251,46 +237,6 @@ void CreateObjects()
 
 	};
 
-
-	unsigned int flechaIndices[] = {
-	   0, 1, 2,
-	   0, 2, 3,
-	};
-
-	GLfloat flechaVertices[] = {
-		-0.5f, 0.0f, 0.5f,		0.0f, 0.0f,		0.0f, -1.0f, 0.0f,
-		0.5f, 0.0f, 0.5f,		1.0f, 0.0f,		0.0f, -1.0f, 0.0f,
-		0.5f, 0.0f, -0.5f,		1.0f, 1.0f,		0.0f, -1.0f, 0.0f,
-		-0.5f, 0.0f, -0.5f,		0.0f, 1.0f,		0.0f, -1.0f, 0.0f,
-
-	};
-
-	unsigned int scoreIndices[] = {
-	   0, 1, 2,
-	   0, 2, 3,
-	};
-
-	GLfloat scoreVertices[] = {
-		-0.5f, 0.0f, 0.5f,		0.0f, 0.0f,		0.0f, -1.0f, 0.0f,
-		0.5f, 0.0f, 0.5f,		1.0f, 0.0f,		0.0f, -1.0f, 0.0f,
-		0.5f, 0.0f, -0.5f,		1.0f, 1.0f,		0.0f, -1.0f, 0.0f,
-		-0.5f, 0.0f, -0.5f,		0.0f, 1.0f,		0.0f, -1.0f, 0.0f,
-
-	};
-
-	unsigned int numeroIndices[] = {
-	   0, 1, 2,
-	   0, 2, 3,
-	};
-
-	GLfloat numeroVertices[] = {
-		-0.5f, 0.0f, 0.5f,		0.0f, 0.67f,		0.0f, -1.0f, 0.0f,
-		0.5f, 0.0f, 0.5f,		0.25f, 0.67f,		0.0f, -1.0f, 0.0f,
-		0.5f, 0.0f, -0.5f,		0.25f, 1.0f,		0.0f, -1.0f, 0.0f,
-		-0.5f, 0.0f, -0.5f,		0.0f, 1.0f,		0.0f, -1.0f, 0.0f,
-
-	};
-
 	Mesh* obj1 = new Mesh();
 	obj1->CreateMesh(vertices, indices, 32, 12);
 	meshList.push_back(obj1);
@@ -303,22 +249,13 @@ void CreateObjects()
 	obj3->CreateMesh(floorVertices, floorIndices, 32, 6);
 	meshList.push_back(obj3);
 
-
 	Mesh* obj4 = new Mesh();
 	obj4->CreateMesh(vegetacionVertices, vegetacionIndices, 64, 12);
 	meshList.push_back(obj4);
 
-	Mesh* obj5 = new Mesh();
-	obj5->CreateMesh(flechaVertices, flechaIndices, 32, 6);
-	meshList.push_back(obj5);
+	calcAverageNormals(indices, 12, vertices, 32, 8, 5);
 
-	Mesh* obj6 = new Mesh();
-	obj6->CreateMesh(scoreVertices, scoreIndices, 32, 6);
-	meshList.push_back(obj6);
-
-	Mesh* obj7 = new Mesh();
-	obj7->CreateMesh(numeroVertices, numeroIndices, 32, 6);
-	meshList.push_back(obj7);
+	calcAverageNormals(vegetacionIndices, 12, vegetacionVertices, 64, 8, 5);
 
 }
 
@@ -362,7 +299,6 @@ int main()
 	CreateShaders();
 	CrearPiramideTriangular();//índice 1 en MeshList
 
-	
 	// ================ CÁMARAS ================================
 	Camera dynamicCamera(
 		glm::vec3(0.0f, 0.0f, 0.0f),
@@ -379,6 +315,15 @@ int main()
 		-50.0f,                          // Pitch a -90 grados para mirar hacia abajo
 		0.0f,                           // La velocidad de movimiento no es relevante para la cámara estática
 		0.0f                            // La velocidad de giro tampoco es relevante para la cámara estática
+	);
+
+	Camera avatarCamera(
+		glm::vec3(0.0f, 0.0f, -80.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f),
+		90.0f,
+		15.0f,
+		0.3f,
+		0.5f                           // La velocidad de giro tampoco es relevante para la cámara estática
 	);
 
 	Camera* camera = &dynamicCamera;
@@ -399,13 +344,13 @@ int main()
 
 	// ----------- Elementos Pinball -------------
 	Pinball = Model();
-	Pinball.LoadModel("Models/PINBALL_V5.obj");
+	Pinball.LoadModel("Models/PINBALL_V4.obj");
 
 	Coin = Model();
 	Coin.LoadModel("Models/Coin.obj");
 
 	Canica = Model();
-	Canica.LoadModel("Models/CanicaD.obj");
+	Canica.LoadModel("Models/canica.obj");
 
 	Tapa = Model();
 	Tapa.LoadModel("Models/Tapa.obj");
@@ -434,10 +379,7 @@ int main()
 	FighterTank.LoadModel("Models/rep_hover_fightertank.obj");
 
 	ComandanteFordo = Model();
-	ComandanteFordo.LoadModel("Models/ComandanteFordo.obj");
-
-	FlipperSable = Model();
-	FlipperSable.LoadModel("Models/lightsaber.obj");
+	ComandanteFordo.LoadModel("Models/rep_inf_arctrooper.obj");
 
 	// ----------- Elementos Kirby -------------
 
@@ -452,31 +394,40 @@ int main()
 	Mandy = Model();
 	Mandy.LoadModel("Models/Mandy.obj");
 
-	ISoundEngine* soundEngine = nullptr;
+	Prisionero = Model();
+	Prisionero.LoadModel("Models/Prisoner_Corpse_Damage_0.obj");
 
-	if (avanzaMoneda=true) {
-		printf("Sonido");
-		soundEngine = createIrrKlangDevice();
-		if (!soundEngine) {
-			// Manejo de error si no se pudo crear el motor de sonido
-			return 1;
-		}
+	Ojo = Model();
+	Ojo.LoadModel("Models/Hell eye.obj");
+
+	Mano = Model();
+	Mano.LoadModel("Models/JNlefthnd.obj");
+
+	Roca = Model();
+	Roca.LoadModel("Models/rtm_rock_space.obj");
+
+	Lava = Model();
+	Lava.LoadModel("Models/lava.obj");
+
+	/*ISoundEngine* soundEngine = createIrrKlangDevice();
+
+	if (!soundEngine) {
+		// Manejo de error si no se pudo crear el motor de sonido
+		return 1;
 	}
+
 	// Ruta al archivo MP3 que deseas reproducir
 	const char* mp3FilePath = "Models/Kirby_s-Pinball-Land-Title-Theme.wav";
 
 	// Reproduce el archivo WAV
 	///*
 
-	if (avanzaMoneda = true) {
-		ISound* sound = soundEngine->play2D(mp3FilePath, true, false, true);
-		if (sound) {
-			sound->setVolume(0.2f);
-		}
-	}
+	ISound* sound = soundEngine->play2D(mp3FilePath, true, false, true);
 
-	
-	//*/
+	if (!sound) {
+		// Manejo de error si no se pudo reproducir el archivo
+		return 1;
+	}*/
 
 	// Espera
 
@@ -497,43 +448,18 @@ int main()
 	Material_opaco = Material(0.3f, 4);
 
 
-
 	//luz direccional, sólo 1 y siempre debe de existir
 	mainLight = DirectionalLight(1.0f, 1.0f, 1.0f,
 		0.3f, 0.3f,
 		0.0f, 0.0f, -1.0f);
 	//contador de luces puntuales
 	unsigned int pointLightCount = 0;
-
-
-	// =============	Declaración de la primera luz puntual	=======================
-
-
-	pointLights[0] = PointLight(
-		0.0f, 1.0f, 0.0f,   // RGB
-		20.0f, 50.0f,       // aIntensity - dIntensity
-		0.0f, 200.0f, 0.0f,   // La posición central del tablero
-		1.0f / 100.0f, 1.0f / 100.0f, 1.0f / 100.0f // Coeficientes de atenuación (Con, Lineal y Exponencial)
-	);
+	//Declaración de primer luz puntual
+	pointLights[0] = PointLight(1.0f, 0.0f, 0.0f,
+		0.0f, 1.0f,
+		-6.0f, 1.5f, 1.5f,
+		0.3f, 0.2f, 0.1f);
 	pointLightCount++;
-
-	pointLights[1] = PointLight(
-		1.0f, 0.0f, 0.0f,   // RGB
-		20.0f, 50.0f,       // aIntensity - dIntensity
-		0.0f, 55.0f, 420.0f,   // La posición central del tablero
-		1.0f / 100.0f, 1.0f / 100.0f, 1.0f / 100.0f // Coeficientes de atenuación (Con, Lineal y Exponencial)
-	);
-	pointLightCount++;
-
-	pointLights[2] = PointLight(
-		0.0f, 0.0f, 1.0f,   // RGB
-		20.0f, 50.0f,       // aIntensity - dIntensity
-		0.0f, 295.0f, -520.0f,   // La posición central del tablero
-		1.0f / 100.0f, 1.0f / 100.0f, 1.0f / 100.0f // Coeficientes de atenuación (Con, Lineal y Exponencial)
-	);
-	pointLightCount++;
-
-
 
 	unsigned int spotLightCount = 0;
 	//linterna
@@ -545,12 +471,19 @@ int main()
 		5.0f);
 	spotLightCount++;
 
-
+	//luz fija
+	spotLights[1] = SpotLight(0.0f, 1.0f, 0.0f,
+		1.0f, 2.0f,
+		5.0f, 10.0f, 0.0f,
+		0.0f, -5.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+		15.0f);
+	spotLightCount++;
 
 	//se crean mas luces puntuales y spotlight 
 
 	GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0, uniformEyePosition = 0,
-		uniformSpecularIntensity = 0, uniformShininess = 0, uniformTextureOffset = 0;
+		uniformSpecularIntensity = 0, uniformShininess = 0;
 	GLuint uniformColor = 0;
 	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 2500.0f); //Campo de Visión
 
@@ -575,19 +508,6 @@ int main()
 	movPalancaOffset = 0.15f;
 	palancaLista = false;
 
-	//Variables de PUNTUACION DEL PINBALL QUE SE VEN EN EL OBJETO
-	valorUnidades = 0;
-	valorDecenas = 0;
-
-	cambianum = 0.0f;
-	movTextura = 0.0f;
-	velTextura = 0.55f;
-
-	valorCoordUDecenas = 0.0f;
-	valorCoordVDecenas = 0.0f;
-
-	coordU = 0.25f;
-	coordV = -0.67f;
 
 	////Loop mientras no se cierra la ventana
 	while (!mainWindow.getShouldClose())
@@ -607,16 +527,39 @@ int main()
 		else if (mainWindow.getCamaraVis() == 2) {
 			camera = &staticCamera; // Cambiar a la cámara estática
 		}
+		else if (mainWindow.getCamaraVis() == 3) {
+			camera = &avatarCamera; // Cambiar a la cámara estática
 
+		}
 
 		glm::mat4 viewMatrix = camera->calculateViewMatrix();
-		// Usar viewMatrix para tus transformaciones y enviarla a los shaders
+
+
+
+		//posicion de la camara Wheezy
+		glm::vec3 poscam = avatarCamera.getCameraPosition();
+		glm::vec3 dircam = avatarCamera.getCameraDirection();
+
+		float angulo_cam = atan(dircam.z / dircam.x);
+		angulo_cam += (90 * toRadians);
+		if (dircam.x > 0) {
+			angulo_cam += (180 * toRadians);
+		}
+		glm::vec3 posAvatar = glm::vec3(0, 0, 0);
+
+
+		posAvatar.x = poscam.x + (angulo_cam);
+		posAvatar.z = poscam.z + (angulo_cam);
+		posAvatar.y = poscam.y - 20;
+
+		//direccion de la camara Wheezy
+		
 
 
 		if (mainWindow.getMonedaPinball()) {
 			if (avanzaMoneda)
 			{
-				if (movMoneda < 164.0f)
+				if (movMoneda < 105.0f)
 				{
 					movMoneda += movMonedaOffset * deltaTime;
 					printf("avanza%f \n ", movMoneda);
@@ -696,7 +639,7 @@ int main()
 
 		// ---------MANEJO DE ILUMINACIÓN PARA CICLO DE DÍA Y DE NOCHE-----------
 
-		if (contadorDiaNoche <= 1.0f and dia) {
+	/*	if (contadorDiaNoche <= 1.0f and dia) {
 			contadorDiaNoche += deltaTime * 0.0002f;
 		}
 		else if (contadorDiaNoche >= 1.0f and dia) {
@@ -711,7 +654,7 @@ int main()
 
 		printf("\nContador = %f", contadorDiaNoche);
 		mainLight.ChangeDiffuseAmbient(contadorDiaNoche, 0.3);
-
+		*/
 
 		//Recibir eventos del usuario
 		glfwPollEvents();
@@ -728,7 +671,6 @@ int main()
 		uniformView = shaderList[0].GetViewLocation();
 		uniformEyePosition = shaderList[0].GetEyePositionLocation();
 		uniformColor = shaderList[0].getColorLocation();
-		uniformTextureOffset = shaderList[0].getOffsetLocation();
 
 		//información en el shader de intensidad especular y brillo
 		uniformSpecularIntensity = shaderList[0].GetSpecularIntensityLocation();
@@ -755,7 +697,6 @@ int main()
 		glm::mat4 modelaux(1.0);
 		glm::mat4 modelauxCuerpoPinball(1.0);
 		glm::mat4 modelauxFlipper(1.0);
-		glm::vec2 toffset = glm::vec2(0.0f, 0.0f);
 
 
 		glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -767,14 +708,15 @@ int main()
 		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
 
 		pisoTexture.UseTexture();
-		Material_opaco.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		meshList[2]->RenderMesh();
 
 		// ---------OBJETOS DE BILLY-----------
-				//Billy
+		//Billy
 		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, -80.0f));
+		model = glm::translate(model,posAvatar);
 		model = glm::scale(model, glm::vec3(5.0f, 5.0f, 5.0f));
+		model = glm::rotate(model, -angulo_cam , glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Billy.RenderModel();
 
@@ -791,6 +733,53 @@ int main()
 		model = glm::scale(model, glm::vec3(5.0f, 5.0f, 5.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Mandy.RenderModel();
+
+		//Prisionero
+		model =modelauxCuerpoPinball;
+		model = glm::translate(model, glm::vec3(60.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Prisionero.RenderModel();
+
+		//Ojo1
+		model = modelauxCuerpoPinball;
+		model = glm::translate(model, glm::vec3(-80.0f, 75.0f, 300.0f));
+		model = glm::scale(model, glm::vec3(90.0f, 90.0f, 90.0f));
+		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, 180 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Ojo.RenderModel();
+
+		//Ojo2
+		model = modelauxCuerpoPinball;
+		model = glm::translate(model, glm::vec3(30.0f, 75.0f, 300.0f));
+		model = glm::scale(model, glm::vec3(90.0f, 90.0f, 90.0f));
+		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, 180 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Ojo.RenderModel();
+
+		//Mano
+		model = modelauxCuerpoPinball;
+		model = glm::translate(model, glm::vec3(-90.0f, 50.0f, 450.0f));
+		model = glm::scale(model, glm::vec3(5.0f, 5.0f, 5.0f));
+		model = glm::rotate(model, 100 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Mano.RenderModel();
+
+		//Roca
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(100.0f, 5.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Roca.RenderModel();
+
+		//Lava
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(120.0f, 20.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.01f, 0.01f, 0.01f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Lava.RenderModel();
 
 		// ---------OBJETOS DE STAR WARS-----------
 		//Cañonera 1
@@ -835,31 +824,6 @@ int main()
 
 		// --------- OBJETOS DE PINBALL -----------
 
-		//Para apagar la primera PointLight [Verde]
-		if (mainWindow.getapagaLuzLinternaVerde())
-		{
-			shaderList[0].SetPointLights(&pointLights[0], 1);
-		}
-
-		//Para apagar la segunda PointLight [Roja]
-		if (mainWindow.getapagaLuzLinternaRoja())
-		{
-			shaderList[0].SetPointLights(&pointLights[1], 1);
-		}
-
-		//Para apagar la segunda PointLight [Azul]
-		if (mainWindow.getapagaLuzLinternaAzul())
-		{
-			shaderList[0].SetPointLights(&pointLights[2], 1);
-		}
-
-		// Para apagar la linterna 
-		if (mainWindow.getapagaLuz())
-		{
-			shaderList[0].SetSpotLights(&spotLights[1], 1);
-		}
-
-
 		///*
 		//Tablero de Pinball
 		model = glm::mat4(1.0);
@@ -895,7 +859,7 @@ int main()
 
 		//Resorte
 		model = modelaux;
-		model = glm::translate(model, glm::vec3(0.0f, 10.0f, -35.5f));
+		model = glm::translate(model, glm::vec3(0.0f, 10.35f, -20.5f));
 		model = glm::rotate(model, -90 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(4.0f, 5.2f - (movPalanca / 3), 4.0f));
 		//model = glm::scale(model, glm::vec3(1.0f, movPalanca, 1.0f));
@@ -921,18 +885,10 @@ int main()
 		model = glm::translate(model, glm::vec3(movCanicaX, 0.0f, -movCanicaZ));
 		model = glm::rotate(model, -rotCanica * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::rotate(model, -rotCanica * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(3.5f, 3.5f, 3.5f));
+		model = glm::scale(model, glm::vec3(2.0f, 2.0f, 2.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		Canica.RenderModel();
-
-		//------------ FLIPPER IZQUIERDO STAR WARS ----------------
-		model = modelauxCuerpoPinball;
-		model = glm::translate(model, glm::vec3(0.0f, 109.0f, 0.0f));
-		model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(8.5f, 8.5f, 8.5f));
-		model = glm::rotate(model, glm::radians(mainWindow.getFlipperI()), glm::vec3(-1.0f, 0.0f, 0.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		FlipperSable.RenderModel();
 
 		//------------ FLIPPER IZQUIERDO ----------------
 		model = modelauxCuerpoPinball;
@@ -956,7 +912,7 @@ int main()
 
 		// --Sección Izquierda de Pirámides
 		//Pirámide Central
-		
+
 		model = modelauxCuerpoPinball;
 		model = glm::translate(model, glm::vec3(-170.0f, 62.8f, 427.0f));
 		model = glm::scale(model, glm::vec3(40.0f, 40.0f, 40.0f));
@@ -970,7 +926,7 @@ int main()
 		meshList[0]->RenderMesh();
 
 		//Piramide Flipper
-		
+
 		model = modelauxCuerpoPinball;
 		model = glm::translate(model, glm::vec3(-125.0f, 44.9f, 450.0f));
 		modelauxFlipper = model;
@@ -983,10 +939,8 @@ int main()
 		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
 		meshList[0]->RenderMesh();
 
-
-
 		//Extremo izq
-		
+
 		model = modelauxCuerpoPinball;
 		model = glm::translate(model, glm::vec3(-183.0f, 62.0f, 375.0f));
 		model = glm::scale(model, glm::vec3(25.0f, 25.0f, 25.0f));
@@ -1001,7 +955,7 @@ int main()
 
 		// --Sección Derecha de Pirámides
 		//Pirámide Central
-		
+
 		model = modelauxCuerpoPinball;
 		model = glm::translate(model, glm::vec3(122.0f, 62.8f, 427.0f));
 		model = glm::scale(model, glm::vec3(40.0f, 40.0f, 40.0f));
@@ -1056,15 +1010,10 @@ int main()
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		Tapa.RenderModel();
+		glDisable(GL_BLEND);
 
 
-
-
-
-
-	
-
-		
+		shaderList[0].SetDirectionalLight(&mainLight);
 		glUseProgram(0);
 
 		mainWindow.swapBuffers();
