@@ -121,6 +121,7 @@ Model FlipperD;
 Model Base_Palanca;
 Model Palanca;
 Model Resorte;
+Model FlipperSable;
 
 
 
@@ -292,25 +293,26 @@ int main()
 	CreateShaders();
 	CrearPiramideTriangular();//índice 1 en MeshList
 
+	
 	// ================ CÁMARAS ================================
-Camera dynamicCamera(
-	glm::vec3(0.0f, 0.0f, 0.0f), 
-	glm::vec3(0.0f, 1.0f, 0.0f), 
-	-60.0f, 
-	0.0f, 
-	0.3f, 
-	0.5f);
+	Camera dynamicCamera(
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f),
+		-60.0f,
+		0.0f,
+		0.3f,
+		0.5f);
 
-Camera staticCamera(
-	glm::vec3(0.0f, 1600.0f, 1125.0f), // Posición de la cámara en el eje Y sobre el origen
-	glm::vec3(0.0f, 1.0f, 0.0f),  // Mirando hacia abajo en el eje Y
-	-90.0f,                               // Yaw de 45 grados para rotar la cámara
-	-50.0f,                          // Pitch a -90 grados para mirar hacia abajo
-	0.0f,                           // La velocidad de movimiento no es relevante para la cámara estática
-	0.0f                            // La velocidad de giro tampoco es relevante para la cámara estática
-);
+	Camera staticCamera(
+		glm::vec3(0.0f, 1600.0f, 1125.0f), // Posición de la cámara en el eje Y sobre el origen
+		glm::vec3(0.0f, 1.0f, 0.0f),  // Mirando hacia abajo en el eje Y
+		-90.0f,                               // Yaw de 45 grados para rotar la cámara
+		-50.0f,                          // Pitch a -90 grados para mirar hacia abajo
+		0.0f,                           // La velocidad de movimiento no es relevante para la cámara estática
+		0.0f                            // La velocidad de giro tampoco es relevante para la cámara estática
+	);
 
-Camera * camera = &dynamicCamera; 
+	Camera* camera = &dynamicCamera;
 
 	brickTexture = Texture("Textures/brick.png");
 	brickTexture.LoadTextureA();
@@ -328,7 +330,7 @@ Camera * camera = &dynamicCamera;
 
 	// ----------- Elementos Pinball -------------
 	Pinball = Model();
-	Pinball.LoadModel("Models/PINBALL_V4.obj");
+	Pinball.LoadModel("Models/PINBALL_V5.obj");
 
 	Coin = Model();
 	Coin.LoadModel("Models/Coin.obj");
@@ -363,7 +365,10 @@ Camera * camera = &dynamicCamera;
 	FighterTank.LoadModel("Models/rep_hover_fightertank.obj");
 
 	ComandanteFordo = Model();
-	ComandanteFordo.LoadModel("Models/rep_inf_arctrooper.obj");
+	ComandanteFordo.LoadModel("Models/ComandanteFordo.obj");
+
+	FlipperSable = Model();
+	FlipperSable.LoadModel("Models/lightsaber.obj");
 
 	// ----------- Elementos Kirby -------------
 
@@ -378,25 +383,30 @@ Camera * camera = &dynamicCamera;
 	Mandy = Model();
 	Mandy.LoadModel("Models/Mandy.obj");
 
-	ISoundEngine* soundEngine = createIrrKlangDevice();
+	ISoundEngine* soundEngine = nullptr;
 
-	if (!soundEngine) {
-		// Manejo de error si no se pudo crear el motor de sonido
-		return 1;
+	if (avanzaMoneda=true) {
+		printf("Sonido");
+		soundEngine = createIrrKlangDevice();
+		if (!soundEngine) {
+			// Manejo de error si no se pudo crear el motor de sonido
+			return 1;
+		}
 	}
-
 	// Ruta al archivo MP3 que deseas reproducir
 	const char* mp3FilePath = "Models/Kirby_s-Pinball-Land-Title-Theme.wav";
 
 	// Reproduce el archivo WAV
 	///*
 
-	ISound* sound = soundEngine->play2D(mp3FilePath, true, false, true);
-
-	if (!sound) {
-		// Manejo de error si no se pudo reproducir el archivo
-		return 1;
+	if (avanzaMoneda = true) {
+		ISound* sound = soundEngine->play2D(mp3FilePath, true, false, true);
+		if (sound) {
+			sound->setVolume(0.2f);
+		}
 	}
+
+	
 	//*/
 
 	// Espera
@@ -418,18 +428,27 @@ Camera * camera = &dynamicCamera;
 	Material_opaco = Material(0.3f, 4);
 
 
+
 	//luz direccional, sólo 1 y siempre debe de existir
 	mainLight = DirectionalLight(1.0f, 1.0f, 1.0f,
 		0.3f, 0.3f,
 		0.0f, 0.0f, -1.0f);
 	//contador de luces puntuales
 	unsigned int pointLightCount = 0;
-	//Declaración de primer luz puntual
-	pointLights[0] = PointLight(1.0f, 0.0f, 0.0f,
-		0.0f, 1.0f,
-		-6.0f, 1.5f, 1.5f,
-		0.3f, 0.2f, 0.1f);
+
+
+	// =============	Declaración de la primera luz puntual	=======================
+
+
+	pointLights[0] = PointLight(
+		0.0f, 1.0f, 0.0f,   // RGB
+		20.0f, 50.0f,       // aIntensity - dIntensity
+		0.0f, 200.0f, 0.0f,   // La posición central del tablero
+		1.0f / 100.0f, 1.0f / 100.0f, 1.0f / 100.0f // Coeficientes de atenuación (Con, Lineal y Exponencial)
+	);
 	pointLightCount++;
+
+
 
 	unsigned int spotLightCount = 0;
 	//linterna
@@ -441,14 +460,7 @@ Camera * camera = &dynamicCamera;
 		5.0f);
 	spotLightCount++;
 
-	//luz fija
-	spotLights[1] = SpotLight(0.0f, 1.0f, 0.0f,
-		1.0f, 2.0f,
-		5.0f, 10.0f, 0.0f,
-		0.0f, -5.0f, 0.0f,
-		1.0f, 0.0f, 0.0f,
-		15.0f);
-	spotLightCount++;
+
 
 	//se crean mas luces puntuales y spotlight 
 
@@ -488,7 +500,7 @@ Camera * camera = &dynamicCamera;
 
 		// =========== SELECCIÓN DE CÁMARA ============
 		if (mainWindow.getCamaraVis() == 1) {
-			
+
 			camera = &dynamicCamera;
 			camera->keyControl(mainWindow.getsKeys(), deltaTime);
 			camera->mouseControl(mainWindow.getXChange(), mainWindow.getYChange());
@@ -496,15 +508,16 @@ Camera * camera = &dynamicCamera;
 		else if (mainWindow.getCamaraVis() == 2) {
 			camera = &staticCamera; // Cambiar a la cámara estática
 		}
-		
-		
+
+
 		glm::mat4 viewMatrix = camera->calculateViewMatrix();
 		// Usar viewMatrix para tus transformaciones y enviarla a los shaders
-				
+
+
 		if (mainWindow.getMonedaPinball()) {
 			if (avanzaMoneda)
 			{
-				if (movMoneda < 105.0f)
+				if (movMoneda < 164.0f)
 				{
 					movMoneda += movMonedaOffset * deltaTime;
 					printf("avanza%f \n ", movMoneda);
@@ -603,13 +616,13 @@ Camera * camera = &dynamicCamera;
 
 		//Recibir eventos del usuario
 		glfwPollEvents();
-		camera.keyControl(mainWindow.getsKeys(), deltaTime);
-		camera.mouseControl(mainWindow.getXChange(), mainWindow.getYChange());
+		camera->keyControl(mainWindow.getsKeys(), deltaTime);
+		camera->mouseControl(mainWindow.getXChange(), mainWindow.getYChange());
 
 		// Clear the window
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		skybox.DrawSkybox(camera.calculateViewMatrix(), projection);
+		skybox.DrawSkybox(camera->calculateViewMatrix(), projection);
 		shaderList[0].UseShader();
 		uniformModel = shaderList[0].GetModelLocation();
 		uniformProjection = shaderList[0].GetProjectionLocation();
@@ -622,14 +635,14 @@ Camera * camera = &dynamicCamera;
 		uniformShininess = shaderList[0].GetShininessLocation();
 
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
-		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
-		glUniform3f(uniformEyePosition, camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
+		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera->calculateViewMatrix()));
+		glUniform3f(uniformEyePosition, camera->getCameraPosition().x, camera->getCameraPosition().y, camera->getCameraPosition().z);
 
 		// luz ligada a la cámara de tipo flash
 		//sirve para que en tiempo de ejecución (dentro del while) se cambien propiedades de la luz
-		glm::vec3 lowerLight = camera.getCameraPosition();
+		glm::vec3 lowerLight = camera->getCameraPosition();
 		lowerLight.y -= 0.3f;
-		spotLights[0].SetFlash(lowerLight, camera.getCameraDirection());
+		spotLights[0].SetFlash(lowerLight, camera->getCameraDirection());
 
 		//información al shader de fuentes de iluminación
 		shaderList[0].SetDirectionalLight(&mainLight);
@@ -721,6 +734,18 @@ Camera * camera = &dynamicCamera;
 
 		// --------- OBJETOS DE PINBALL -----------
 
+		if (mainWindow.getapagaLuz())
+		{
+			shaderList[0].SetPointLights(pointLights+1, pointLightCount - 1);
+		}
+
+		// Para apagar la linterna 
+		if (mainWindow.getapagaLuzLinterna())
+		{
+			shaderList[0].SetSpotLights(spotLights + 1, spotLightCount - 1);
+		}
+
+
 		///*
 		//Tablero de Pinball
 		model = glm::mat4(1.0);
@@ -756,7 +781,7 @@ Camera * camera = &dynamicCamera;
 
 		//Resorte
 		model = modelaux;
-		model = glm::translate(model, glm::vec3(0.0f, 10.35f, -20.5f));
+		model = glm::translate(model, glm::vec3(0.0f, 10.0f, -35.5f));
 		model = glm::rotate(model, -90 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(4.0f, 5.2f - (movPalanca / 3), 4.0f));
 		//model = glm::scale(model, glm::vec3(1.0f, movPalanca, 1.0f));
@@ -785,6 +810,15 @@ Camera * camera = &dynamicCamera;
 		model = glm::scale(model, glm::vec3(3.5f, 3.5f, 3.5f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Canica.RenderModel();
+
+		//------------ FLIPPER IZQUIERDO STAR WARS ----------------
+		model = modelauxCuerpoPinball;
+		model = glm::translate(model, glm::vec3(0.0f, 109.0f, 0.0f));
+		model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(8.5f, 8.5f, 8.5f));
+		model = glm::rotate(model, glm::radians(mainWindow.getFlipperI()), glm::vec3(-1.0f, 0.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		FlipperSable.RenderModel();
 
 		//------------ FLIPPER IZQUIERDO ----------------
 		model = modelauxCuerpoPinball;
@@ -816,7 +850,7 @@ Camera * camera = &dynamicCamera;
 		model = glm::rotate(model, 60 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
-		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
+		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera->calculateViewMatrix()));
 		color = glm::vec3(1.0f, 0.0f, 0.0f);
 		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
 		meshList[0]->RenderMesh();
@@ -830,7 +864,7 @@ Camera * camera = &dynamicCamera;
 		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
-		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
+		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera->calculateViewMatrix()));
 		color = glm::vec3(1.0f, 0.0f, 0.0f);
 		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
 		meshList[0]->RenderMesh();
@@ -846,7 +880,7 @@ Camera * camera = &dynamicCamera;
 		model = glm::rotate(model, 40 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
-		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
+		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera->calculateViewMatrix()));
 		color = glm::vec3(1.0f, 0.0f, 0.0f);
 		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
 		meshList[0]->RenderMesh();
@@ -861,7 +895,7 @@ Camera * camera = &dynamicCamera;
 		model = glm::rotate(model, 60 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
-		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
+		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera->calculateViewMatrix()));
 		color = glm::vec3(1.0f, 0.0f, 0.0f);
 		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
 		meshList[0]->RenderMesh();
@@ -874,7 +908,7 @@ Camera * camera = &dynamicCamera;
 		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
-		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
+		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera->calculateViewMatrix()));
 		color = glm::vec3(1.0f, 0.0f, 0.0f);
 		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
 		meshList[0]->RenderMesh();
@@ -888,7 +922,7 @@ Camera * camera = &dynamicCamera;
 		model = glm::rotate(model, 80 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
-		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
+		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera->calculateViewMatrix()));
 		color = glm::vec3(1.0f, 0.0f, 0.0f);
 		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
 		meshList[0]->RenderMesh();
@@ -902,7 +936,7 @@ Camera * camera = &dynamicCamera;
 		model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
-		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
+		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera->calculateViewMatrix()));
 		color = glm::vec3(1.0f, 1.0f, 1.0f);
 		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
 		glEnable(GL_BLEND);
