@@ -21,6 +21,7 @@ Window::Window(GLint windowWidth, GLint windowHeight)
 	Palanca = 0.0f;
 	MonedaPinball = false;
 	ActivaPalanca = false;
+	Canica1 = false;
 	CamaraVis = 1;
 	// ---------------------------------------------- //
 	muevexCarro = 0.01f;
@@ -173,6 +174,15 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 		theWindow->apagaluz2 = !(theWindow->apagaluz2);
 	}
 
+	//	//Para animación de Canica1
+	if (key == GLFW_KEY_O)
+	{
+		theWindow->Canica1 = true;
+	}
+	if (key == GLFW_KEY_P)
+	{
+		theWindow->Canica1 = false;
+	}
 
 
 	if (key == GLFW_KEY_1 && action == GLFW_PRESS)
