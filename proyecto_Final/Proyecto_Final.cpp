@@ -82,6 +82,26 @@ float movOffset;
 bool avanza;
 
 
+//Variables enfocadas en la animación de Textura DE PUNTAJE
+int valorUnidades;
+int valorDecenas;
+float cambianum;
+float movTextura;
+float velTextura;
+float toffsetflechau = 0.0f;
+float toffsetflechav = 0.0f;
+float toffsetnumerou = 0.0f;
+float toffsetnumerov = 0.0f;
+float toffsetnumerocambiau = 0.0;
+float angulovaria = 0.0f;
+
+
+//Para las decenas
+float valorCoordUDecenas;
+float valorCoordVDecenas;
+float coordU;
+float coordV;
+
 Window mainWindow;
 std::vector<Mesh*> meshList;
 std::vector<Shader> shaderList;
@@ -94,6 +114,7 @@ Texture plainTexture;
 Texture pisoTexture;
 Texture AgaveTexture;
 Texture white;
+Texture NumerosTexture;
 
 // =========				Variables de MODELOS				===============
 
@@ -209,7 +230,6 @@ void CreateObjects()
 		-10.0f, 0.0f, 10.0f,	0.0f, 10.0f,	0.0f, -1.0f, 0.0f,
 		10.0f, 0.0f, 10.0f,		10.0f, 10.0f,	0.0f, -1.0f, 0.0f
 	};
-
 	unsigned int vegetacionIndices[] = {
 	   0, 1, 2,
 	   0, 2, 3,
@@ -231,6 +251,46 @@ void CreateObjects()
 
 	};
 
+
+	unsigned int flechaIndices[] = {
+	   0, 1, 2,
+	   0, 2, 3,
+	};
+
+	GLfloat flechaVertices[] = {
+		-0.5f, 0.0f, 0.5f,		0.0f, 0.0f,		0.0f, -1.0f, 0.0f,
+		0.5f, 0.0f, 0.5f,		1.0f, 0.0f,		0.0f, -1.0f, 0.0f,
+		0.5f, 0.0f, -0.5f,		1.0f, 1.0f,		0.0f, -1.0f, 0.0f,
+		-0.5f, 0.0f, -0.5f,		0.0f, 1.0f,		0.0f, -1.0f, 0.0f,
+
+	};
+
+	unsigned int scoreIndices[] = {
+	   0, 1, 2,
+	   0, 2, 3,
+	};
+
+	GLfloat scoreVertices[] = {
+		-0.5f, 0.0f, 0.5f,		0.0f, 0.0f,		0.0f, -1.0f, 0.0f,
+		0.5f, 0.0f, 0.5f,		1.0f, 0.0f,		0.0f, -1.0f, 0.0f,
+		0.5f, 0.0f, -0.5f,		1.0f, 1.0f,		0.0f, -1.0f, 0.0f,
+		-0.5f, 0.0f, -0.5f,		0.0f, 1.0f,		0.0f, -1.0f, 0.0f,
+
+	};
+
+	unsigned int numeroIndices[] = {
+	   0, 1, 2,
+	   0, 2, 3,
+	};
+
+	GLfloat numeroVertices[] = {
+		-0.5f, 0.0f, 0.5f,		0.0f, 0.67f,		0.0f, -1.0f, 0.0f,
+		0.5f, 0.0f, 0.5f,		0.25f, 0.67f,		0.0f, -1.0f, 0.0f,
+		0.5f, 0.0f, -0.5f,		0.25f, 1.0f,		0.0f, -1.0f, 0.0f,
+		-0.5f, 0.0f, -0.5f,		0.0f, 1.0f,		0.0f, -1.0f, 0.0f,
+
+	};
+
 	Mesh* obj1 = new Mesh();
 	obj1->CreateMesh(vertices, indices, 32, 12);
 	meshList.push_back(obj1);
@@ -243,13 +303,22 @@ void CreateObjects()
 	obj3->CreateMesh(floorVertices, floorIndices, 32, 6);
 	meshList.push_back(obj3);
 
+
 	Mesh* obj4 = new Mesh();
 	obj4->CreateMesh(vegetacionVertices, vegetacionIndices, 64, 12);
 	meshList.push_back(obj4);
 
-	calcAverageNormals(indices, 12, vertices, 32, 8, 5);
+	Mesh* obj5 = new Mesh();
+	obj5->CreateMesh(flechaVertices, flechaIndices, 32, 6);
+	meshList.push_back(obj5);
 
-	calcAverageNormals(vegetacionIndices, 12, vegetacionVertices, 64, 8, 5);
+	Mesh* obj6 = new Mesh();
+	obj6->CreateMesh(scoreVertices, scoreIndices, 32, 6);
+	meshList.push_back(obj6);
+
+	Mesh* obj7 = new Mesh();
+	obj7->CreateMesh(numeroVertices, numeroIndices, 32, 6);
+	meshList.push_back(obj7);
 
 }
 
@@ -448,6 +517,22 @@ int main()
 	);
 	pointLightCount++;
 
+	pointLights[1] = PointLight(
+		1.0f, 0.0f, 0.0f,   // RGB
+		20.0f, 50.0f,       // aIntensity - dIntensity
+		0.0f, 55.0f, 420.0f,   // La posición central del tablero
+		1.0f / 100.0f, 1.0f / 100.0f, 1.0f / 100.0f // Coeficientes de atenuación (Con, Lineal y Exponencial)
+	);
+	pointLightCount++;
+
+	pointLights[2] = PointLight(
+		0.0f, 0.0f, 1.0f,   // RGB
+		20.0f, 50.0f,       // aIntensity - dIntensity
+		0.0f, 295.0f, -520.0f,   // La posición central del tablero
+		1.0f / 100.0f, 1.0f / 100.0f, 1.0f / 100.0f // Coeficientes de atenuación (Con, Lineal y Exponencial)
+	);
+	pointLightCount++;
+
 
 
 	unsigned int spotLightCount = 0;
@@ -465,7 +550,7 @@ int main()
 	//se crean mas luces puntuales y spotlight 
 
 	GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0, uniformEyePosition = 0,
-		uniformSpecularIntensity = 0, uniformShininess = 0;
+		uniformSpecularIntensity = 0, uniformShininess = 0, uniformTextureOffset = 0;
 	GLuint uniformColor = 0;
 	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 2500.0f); //Campo de Visión
 
@@ -489,6 +574,20 @@ int main()
 	avanzaCanicaZ = false;
 	movPalancaOffset = 0.15f;
 	palancaLista = false;
+
+	//Variables de PUNTUACION DEL PINBALL QUE SE VEN EN EL OBJETO
+	valorUnidades = 0;
+	valorDecenas = 0;
+
+	cambianum = 0.0f;
+	movTextura = 0.0f;
+	velTextura = 0.55f;
+
+	valorCoordUDecenas = 0.0f;
+	valorCoordVDecenas = 0.0f;
+
+	coordU = 0.25f;
+	coordV = -0.67f;
 
 	////Loop mientras no se cierra la ventana
 	while (!mainWindow.getShouldClose())
@@ -629,6 +728,7 @@ int main()
 		uniformView = shaderList[0].GetViewLocation();
 		uniformEyePosition = shaderList[0].GetEyePositionLocation();
 		uniformColor = shaderList[0].getColorLocation();
+		uniformTextureOffset = shaderList[0].getOffsetLocation();
 
 		//información en el shader de intensidad especular y brillo
 		uniformSpecularIntensity = shaderList[0].GetSpecularIntensityLocation();
@@ -655,6 +755,7 @@ int main()
 		glm::mat4 modelaux(1.0);
 		glm::mat4 modelauxCuerpoPinball(1.0);
 		glm::mat4 modelauxFlipper(1.0);
+		glm::vec2 toffset = glm::vec2(0.0f, 0.0f);
 
 
 		glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -734,15 +835,28 @@ int main()
 
 		// --------- OBJETOS DE PINBALL -----------
 
-		if (mainWindow.getapagaLuz())
+		//Para apagar la primera PointLight [Verde]
+		if (mainWindow.getapagaLuzLinternaVerde())
 		{
-			shaderList[0].SetPointLights(pointLights+1, pointLightCount - 1);
+			shaderList[0].SetPointLights(&pointLights[0], 1);
+		}
+
+		//Para apagar la segunda PointLight [Roja]
+		if (mainWindow.getapagaLuzLinternaRoja())
+		{
+			shaderList[0].SetPointLights(&pointLights[1], 1);
+		}
+
+		//Para apagar la segunda PointLight [Azul]
+		if (mainWindow.getapagaLuzLinternaAzul())
+		{
+			shaderList[0].SetPointLights(&pointLights[2], 1);
 		}
 
 		// Para apagar la linterna 
-		if (mainWindow.getapagaLuzLinterna())
+		if (mainWindow.getapagaLuz())
 		{
-			shaderList[0].SetSpotLights(spotLights + 1, spotLightCount - 1);
+			shaderList[0].SetSpotLights(&spotLights[1], 1);
 		}
 
 
@@ -942,10 +1056,15 @@ int main()
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		Tapa.RenderModel();
-		glDisable(GL_BLEND);
 
 
-		shaderList[0].SetDirectionalLight(&mainLight);
+
+
+
+
+	
+
+		
 		glUseProgram(0);
 
 		mainWindow.swapBuffers();
