@@ -19,7 +19,7 @@ Window::Window(GLint windowWidth, GLint windowHeight)
 	FlipperD = 0.0f;
 	FlipperI = 0.0f;
 	Palanca = 0.0f;
-	MonedaPinball = false;	
+	MonedaPinball = false;
 	ActivaPalanca = false;
 	CamaraVis = 1;
 	// ---------------------------------------------- //
@@ -29,6 +29,7 @@ Window::Window(GLint windowWidth, GLint windowHeight)
 	CarroAdelante = false;
 	CarroAtras = false;
 	apagaluz = true;
+	apagaluzLinterna = false;
 	apagaluz2 = true;
 	apagaluzControl = true;
 	apagaluzHelicoptero = false;//Definimos un estado inicial de nuestra variable
@@ -59,7 +60,7 @@ int Window::Initialise()
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
 	//CREAR VENTANA
-	mainWindow = glfwCreateWindow(width, height, "Proyecto Final CGEIHC", NULL, NULL);
+	mainWindow = glfwCreateWindow(width, height, "Proyecto Final CGEIHC VERSION 5: CAMARA FUNCIONAL Y NUEVA TEXTURA", NULL, NULL);
 
 	if (!mainWindow)
 	{
@@ -186,7 +187,7 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 		// Ejecutar la acción mientras se mantiene presionada la tecla "6"
 		theWindow->ActivaPalanca = true;
 	}
-	else 
+	else
 	{
 		// Realizar cualquier otra acción cuando la tecla se suelta
 		theWindow->ActivaPalanca = false;
