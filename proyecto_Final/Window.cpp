@@ -105,6 +105,7 @@ void Window::createCallbacks()
 {
 	glfwSetKeyCallback(mainWindow, ManejaTeclado);
 	glfwSetCursorPosCallback(mainWindow, ManejaMouse);
+	glfwSetMouseButtonCallback(mainWindow, ManejaClicMouse);
 }
 GLfloat Window::getXChange()
 {
@@ -234,16 +235,16 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 		}
 	}
 
-	if (key == GLFW_KEY_4)
-	{
-		if (theWindow->FlipperD >= 55.0) {
+	//if (key == GLFW_KEY_4)
+	//{
+	//	if (theWindow->FlipperD >= 55.0) {
 
-			theWindow->FlipperD = 0.0f;
-		}
-		else {
-			theWindow->FlipperD += 55.0;
-		}
-	}
+	//		theWindow->FlipperD = 0.0f;
+	//	}
+	//	else {
+	//		theWindow->FlipperD += 55.0;
+	//	}
+	//}
 
 	if (key == GLFW_KEY_3)
 	{
@@ -269,7 +270,10 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 		theWindow->CamaraVis = 2;
 	}
 
-
+	if (key == GLFW_KEY_I)
+	{
+		theWindow->CamaraVis = 3;
+	}
 
 
 	if (key >= 0 && key < 1024)
@@ -303,6 +307,22 @@ void Window::ManejaMouse(GLFWwindow* window, double xPos, double yPos)
 
 	theWindow->lastX = xPos;
 	theWindow->lastY = yPos;
+}
+
+void Window::ManejaClicMouse(GLFWwindow* window, int button, int action, int mods)
+{
+	Window* theWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
+
+	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
+	{
+		if (theWindow->FlipperD >= 55.0) {
+
+			theWindow->FlipperD = 0.0f;
+		}
+		else {
+			theWindow->FlipperD += 55.0;
+		}
+	}
 }
 
 
