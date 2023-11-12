@@ -18,11 +18,13 @@ Window::Window(GLint windowWidth, GLint windowHeight)
 
 	FlipperD = 0.0f;
 	FlipperI = 0.0f;
+	FlipperISW = 0.0f;
+
 	Palanca = 0.0f;
 	MonedaPinball = false;
 	ActivaPalanca = false;
 	Canica1 = false;
-	CamaraVis = 1;
+	CamaraVis = 2;
 	// ---------------------------------------------- //
 	muevexCarro = 0.01f;
 	muevexCarroAdelante = 0.01f;
@@ -63,7 +65,7 @@ int Window::Initialise()
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
 	//CREAR VENTANA
-	mainWindow = glfwCreateWindow(width, height, "Proyecto Final CGEIHC VERSION 5: CAMARA FUNCIONAL Y NUEVA TEXTURA", NULL, NULL);
+	mainWindow = glfwCreateWindow(width, height, "Proyecto Final Lab CGEIHC 2024-1: Pinball (Billy & Mandy, Kirby, Star Wars).", NULL, NULL);
 
 	if (!mainWindow)
 	{
@@ -133,79 +135,20 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 		glfwSetWindowShouldClose(window, GL_TRUE);
 	}
 
-	//Para articulación de la rueda (Movimiento)
-	if (key == GLFW_KEY_Y)		//Adelante
-	{
-		theWindow->articulacion1 += 10.0;
-	}
-	if (key == GLFW_KEY_U)		//Atras
-	{
-		theWindow->articulacion1 -= 10.0;
-	}
 
-	if (key == GLFW_KEY_V)
-	{
-		if (theWindow->anguloCofre > 45.0)
-		{
-		}
-		else
-		{
-			theWindow->anguloCofre += 10.0;
-		}
-	}
 
-	if (key == GLFW_KEY_B)
-	{
-		if (theWindow->anguloCofre < 1.0)
-		{
-		}
-		else
-		{
-			theWindow->anguloCofre -= 10.0;
-		}
-	}
 
-	if (key == GLFW_KEY_X && action == GLFW_PRESS)
+
+
+	if (key == GLFW_KEY_L && action == GLFW_PRESS)
 	{
 		theWindow->apagaluz = !(theWindow->apagaluz);
 	}
 
-	if (key == GLFW_KEY_L && action == GLFW_PRESS)
-	{
-		theWindow->apagaluz2 = !(theWindow->apagaluz2);
-	}
-
-	//	//Para animación de Canica1
-	if (key == GLFW_KEY_O)
-	{
-		theWindow->Canica1 = true;
-	}
-	if (key == GLFW_KEY_P)
-	{
-		theWindow->Canica1 = false;
-	}
-
-
-	if (key == GLFW_KEY_1 && action == GLFW_PRESS)
+	if (key == GLFW_KEY_I && action == GLFW_PRESS)
 	{
 		theWindow->MonedaPinball = !(theWindow->MonedaPinball);
 	}
-
-
-	if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS) {
-		// Ejecutar la acción mientras se mantiene presionada la tecla "6"
-		theWindow->ActivaPalanca = true;
-	}
-	else
-	{
-		// Realizar cualquier otra acción cuando la tecla se suelta
-		theWindow->ActivaPalanca = false;
-	}
-
-
-
-
-
 
 	if (key == GLFW_KEY_M && action == GLFW_PRESS)
 	{
@@ -224,7 +167,7 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 
 	// ---- MOVIMIENTO DE LOS FLIPPERS ------- //
 
-	if (key == GLFW_KEY_3)
+	if (key == GLFW_KEY_Z)
 	{
 		if (theWindow->FlipperI >= 55.0) {
 
@@ -235,42 +178,41 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 		}
 	}
 
-	//if (key == GLFW_KEY_4)
-	//{
-	//	if (theWindow->FlipperD >= 55.0) {
-
-	//		theWindow->FlipperD = 0.0f;
-	//	}
-	//	else {
-	//		theWindow->FlipperD += 55.0;
-	//	}
-	//}
-
-	if (key == GLFW_KEY_3)
+	if (key == GLFW_KEY_X)
 	{
-		if (theWindow->Palanca >= 55.0) {
+		if (theWindow->FlipperD >= 55.0) {
 
-			theWindow->Palanca = 0.0f;
+			theWindow->FlipperD = 0.0f;
 		}
 		else {
-			theWindow->Palanca += 5.0;
+			theWindow->FlipperD += 55.0;
+		}
+	}
+
+	if (key == GLFW_KEY_C)
+	{
+		if (theWindow->FlipperISW >= 55.0) {
+
+			theWindow->FlipperISW = 0.0f;
+		}
+		else {
+			theWindow->FlipperISW += 55.0;
 		}
 	}
 
 	// ---------------------------------------------- //
 
-	if (key == GLFW_KEY_Y)
+	if (key == GLFW_KEY_3)
 	{
 		theWindow->CamaraVis = 1;
-
-
 	}
-	if (key == GLFW_KEY_U)
+
+	if (key == GLFW_KEY_1)
 	{
 		theWindow->CamaraVis = 2;
 	}
 
-	if (key == GLFW_KEY_I)
+	if (key == GLFW_KEY_2)
 	{
 		theWindow->CamaraVis = 3;
 	}
@@ -291,6 +233,32 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 	}
 }
 
+
+void Window::ManejaClicMouse(GLFWwindow* window, int button, int action, int mods)
+{
+	Window* theWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
+
+	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
+	{
+		theWindow->ActivaPalanca = true;
+	}
+	else {
+		theWindow->ActivaPalanca = false;
+	}
+
+	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+	{
+		theWindow->ActivaLanzamiento = true;
+	}
+	else {
+		theWindow->ActivaLanzamiento = false;
+	}
+
+}
+
+
+
+
 void Window::ManejaMouse(GLFWwindow* window, double xPos, double yPos)
 {
 	Window* theWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
@@ -307,22 +275,6 @@ void Window::ManejaMouse(GLFWwindow* window, double xPos, double yPos)
 
 	theWindow->lastX = xPos;
 	theWindow->lastY = yPos;
-}
-
-void Window::ManejaClicMouse(GLFWwindow* window, int button, int action, int mods)
-{
-	Window* theWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
-
-	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
-	{
-		if (theWindow->FlipperD >= 55.0) {
-
-			theWindow->FlipperD = 0.0f;
-		}
-		else {
-			theWindow->FlipperD += 55.0;
-		}
-	}
 }
 
 
