@@ -54,7 +54,10 @@ using namespace irrklang;
 
 //========== Dia y noche =====
 float contadorDiaNoche = 0.0f;
-bool dia = false;
+bool dia = true;
+bool noche = false;
+bool skyboxDia = true;
+bool skyboxNoche = false;
 
 //====	Moneda
 float movMoneda;
@@ -77,14 +80,21 @@ bool avanzaCanicaX;
 bool avanzaCanicaY;
 bool avanzaCanicaZ;
 bool palancaLista;
+bool lanzamientoCanica;
 
-//Animacion Canica1
+//Animacion Canica 1
 bool CanicaAnim;
 int Canica1Edo;
 float CanX;
 float velCanX;
 float CanZ;
 float velCanZ;
+
+bool Canica1Anim;
+
+float movOffset;
+bool avanza;
+
 
 //Animacion Canica2
 bool CanicaAnim2;
@@ -93,12 +103,39 @@ float Can2X;
 float Can2Z;
 int rebote;
 
+bool Canica2Anim;
+
 float newVel;
 
+//Variables de control Animación Canica3 (Keyframes)
+bool CanicaAnim3;
+bool Canica3Anim;
 
-float movOffset;
-bool avanza;
+//Variables de control de fin de animación
+bool finAnim1;
+bool finAnim2;
+bool finAnim3;
 
+//Variables enfocadas en la animación de Textura DE PUNTAJE
+float decU, decV;
+float numU, numV;
+int num, num2;
+
+//Para las decenas
+float valorCoordUDecenas;
+float valorCoordVDecenas;
+float coordU;
+float coordV;
+
+//Variables para animación de Objeto Jerárquico
+bool chopper1;
+float giroChopper;
+float saltoChopper1;
+float saltoChopper;
+bool chopper2;
+float giroChopper2;
+float velGiroChopper;
+float saltoOffset;
 
 Window mainWindow;
 std::vector<Mesh*> meshList;
@@ -112,6 +149,9 @@ Texture plainTexture;
 Texture pisoTexture;
 Texture AgaveTexture;
 Texture white;
+Texture NumerosTexture;
+Texture estrellaTexture;
+Texture rocosaTexture;
 
 // =========				Variables de MODELOS				===============
 
@@ -120,9 +160,97 @@ Texture white;
 Model CañoneraLAAT;
 Model ComandanteFordo;
 Model FighterTank;
+Model Chopper;
+Model Cuerpo;
+Model Rueda;
+Model Cabeza;
+Model Brazo_Izq;
+Model Brazo_Der;
+
+
+void CreateStar() {
+	unsigned int indicesEstrella[] = {
+	0, 1, 2,
+	3, 4, 5,
+	5, 6, 7,
+	7, 8, 9,
+	9, 10, 11,
+	2, 1, 9,
+	1, 5, 9,
+	5, 7, 9
+	};
+
+	GLfloat verticesEstrella[] = {
+		//		x      		y 		     z				u	  v			nx	  ny    nz
+			0.054193f, -0.55023f, 0.83147f,	         0.0f, 0.0f,		1.0f, 0.0f, 0.0f,
+			0.15008f,  -0.12317f, 0.98079f,		     0.5f, 0.0f,		0.0f, 1.0f, 0.0f,
+			-0.13795f,  -0.13795f, 0.98079f,		 1.0f, 0.0f,		0.0f, 0.0f, 1.0f,
+
+			0.15008f,  -0.12317f, 0.98079f,		     0.5f, 0.0f,		0.0f, 0.0f, 1.0f,
+			0.55023f,  -0.054193f, 0.83147f,		 0.5f, 0.0f,		0.0f, 1.0f, 0.0f,
+			0.25788f,  0.12742f, 0.95233f,		     0.5f, 0.0f,		1.0f, 0.0f, 0.0f,
+
+			0.30866f,  0.46194f, 0.83147f,		     0.5f, 0.0f,		1.0f, 0.0f, 0.0f,
+			0.037329f,  0.28521f, 0.95233f,		     0.5f, 0.0f,		0.0f, 1.0f, 0.0f,
+
+			-0.34285f,  0.39285f, 0.83147f,		     0.5f, 0.0f,		0.0f, 1.0f, 0.0f,
+			-0.27245f,  0.092253f, 0.95233f,		 0.5f, 0.0f,		1.0f, 0.0f, 0.0f,
+
+			-0.53089f,  -0.11439f, 0.83147f,		 0.5f, 0.0f,		1.0f, 0.0f, 0.0f,
+			-0.13795f,  -0.13795f, 0.98079f,		 1.0f, 0.0f,		0.0f, 1.0f, 0.0f,
+
+	};
+
+	Mesh* obj1 = new Mesh();
+	obj1->CreateMesh(verticesEstrella, indicesEstrella, 96, 24);
+	meshList.push_back(obj1);
+}
+
+void CreatePiramide() {
+
+	unsigned int indices_piramide_triangular[] = {
+			0,1,2,
+			1,3,2,
+			3,0,2,
+			1,0,3
+
+	};
+	GLfloat vertices_piramide_triangular[] = {
+
+		//		x      		y 		     z				u	  v			nx	  ny    nz
+			 -0.5f,       -0.5f,       0.0f,			0.5f, 0.5f,		0.0f, 0.0f, 0.0f,
+			  0.5f,		  -0.5f,	   0.0f,			0.5f, 0.5f,		0.0f, 0.0f, 0.0f,
+			  0.0f,		   0.5f,	  -0.25f,			0.5f, 0.5f,		0.0f, 0.0f, 0.0f,
+			  0.0f,       -0.5f,      -0.5f,			0.5f, 0.5f,		0.0f, 0.0f, 0.0f,
+
+	};
+	Mesh* obj1 = new Mesh();
+	obj1->CreateMesh(vertices_piramide_triangular, indices_piramide_triangular, 12, 12);
+	meshList.push_back(obj1);
+}
+
+void CreateScore() {
+	unsigned int scoreIndices[] = {
+	   0, 1, 2,
+	   0, 2, 3,
+	};
+
+	GLfloat scoreVertices[] = {
+		-0.5f, 0.0f, 0.5f,		0.0f, 0.0f,		0.0f, -1.0f, 0.0f,
+		0.5f, 0.0f, 0.5f,		1.0f, 0.0f,		0.0f, -1.0f, 0.0f,
+		0.5f, 0.0f, -0.5f,		1.0f, 1.0f,		0.0f, -1.0f, 0.0f,
+		-0.5f, 0.0f, -0.5f,		0.0f, 1.0f,		0.0f, -1.0f, 0.0f,
+
+	};
+	Mesh* obj6 = new Mesh();
+	obj6->CreateMesh(scoreVertices, scoreIndices, 32, 6);
+	meshList.push_back(obj6);
+}
+
+
 
 //====	Kirby
-Model Kirby;//Línea añadida
+Model Kirby;
 Model Apple;
 Model Whispy;
 
@@ -130,6 +258,12 @@ Model Whispy;
 Model Billy;
 Model Grim;
 Model Mandy;
+Model Irwing;
+Model Prisionero;
+Model Ojo;
+Model Mano;
+Model Roca;
+Model Lava;
 
 //====	Elementos del PINBALL
 Model Pinball;
@@ -141,6 +275,8 @@ Model FlipperD;
 Model Base_Palanca;
 Model Palanca;
 Model Resorte;
+Model FlipperSable;
+Model Pantalla;
 
 
 
@@ -198,7 +334,6 @@ void calcAverageNormals(unsigned int* indices, unsigned int indiceCount, GLfloat
 		vertices[nOffset] = vec.x; vertices[nOffset + 1] = vec.y; vertices[nOffset + 2] = vec.z;
 	}
 }
-
 
 void CreateObjects()
 {
@@ -302,10 +437,11 @@ void CreateShaders()
 	shaderList.push_back(*shader1);
 }
 
+
 ////////////////////// FUNCIONES Y VALORES INICIALES DE KEYFRAMES //////////////////////
 
 //variables para keyframes
-float reproduciranimacion, habilitaranimacion,  reinicioFrame, ciclo, ciclo2, contador = 0.0f;
+float reproduciranimacion, habilitaranimacion, reinicioFrame, ciclo, ciclo2, contador = 0.0f;
 
 //función para teclado de keyframes 
 void inputKeyframes(bool* keys);
@@ -317,7 +453,6 @@ bool animacion = false;
 //NEW// Keyframes
 float posXavion = 2.0, posYavion = 5.0, posZavion = -3.0;
 float	movAvion_x = 0.0f, movAvion_y = 0.0f;
-float giroAvion = 0;
 
 #define MAX_FRAMES 100
 int i_max_steps = 90;
@@ -360,11 +495,11 @@ void animate(void)
 		if (i_curr_steps >= i_max_steps) //fin de animación entre frames?
 		{
 			playIndex++;
-			printf("playindex : %d\n", playIndex);
+			//printf("playindex : %d\n", playIndex);
 			if (playIndex > FrameIndex - 2)	//Fin de toda la animación con último frame?
 			{
-				printf("Frame index= %d\n", FrameIndex);
-				printf("termino la animacion\n");
+				//printf("Frame index= %d\n", FrameIndex);
+				//printf("termino la animacion\n");
 				playIndex = 0;
 				play = false;
 			}
@@ -389,21 +524,25 @@ void animate(void)
 
 ////////////////////// *** FIN KEYFRAMES *** //////////////////////
 
+
+
 int main()
 {
 	mainWindow = Window(1920, 1080); // 1280, 1024 or 1024, 768
 	mainWindow.Initialise();
 
+	CreateStar();
+	CreatePiramide();
+	CreateScore();
 	CreateObjects();
 	CreateShaders();
-	CrearPiramideTriangular();//índice 1 en MeshList
 
-	
+
 	// ================ CÁMARAS ================================
 	Camera dynamicCamera(
-		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(205.0f, 42.5f, 510.5f),
 		glm::vec3(0.0f, 1.0f, 0.0f),
-		-60.0f,
+		-90.0f,
 		0.0f,
 		0.3f,
 		0.5f);
@@ -415,6 +554,15 @@ int main()
 		-50.0f,                          // Pitch a -90 grados para mirar hacia abajo
 		0.0f,                           // La velocidad de movimiento no es relevante para la cámara estática
 		0.0f                            // La velocidad de giro tampoco es relevante para la cámara estática
+	);
+
+	Camera avatarCamera(
+		glm::vec3(0.0f, 100.0f, 590.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f),
+		90.0f,
+		15.0f,
+		0.3f,
+		0.5f                           // La velocidad de giro tampoco es relevante para la cámara estática
 	);
 
 	Camera* camera = &dynamicCamera;
@@ -430,18 +578,25 @@ int main()
 	AgaveTexture = Texture("Textures/Agave.tga");
 	AgaveTexture.LoadTextureA();
 
+	estrellaTexture = Texture("Textures/estrella.tga");
+	estrellaTexture.LoadTextureA();
+	rocosaTexture = Texture("Textures/rocosa.tga");
+	rocosaTexture.LoadTextureA();
+
+	NumerosTexture = Texture("Textures/numerosbase.tga");
+	NumerosTexture.LoadTextureA();
 
 	//	Se cargan todos los objetos 
 
 	// ----------- Elementos Pinball -------------
 	Pinball = Model();
-	Pinball.LoadModel("Models/PINBALL_V5.obj");
+	Pinball.LoadModel("Models/PINBALL_V6.obj");
 
 	Coin = Model();
 	Coin.LoadModel("Models/Coin.obj");
 
 	Canica = Model();
-	Canica.LoadModel("Models/CanicaD.obj");
+	Canica.LoadModel("Models/CanicaGold.obj");
 
 	Tapa = Model();
 	Tapa.LoadModel("Models/Tapa.obj");
@@ -461,19 +616,36 @@ int main()
 	Resorte = Model();
 	Resorte.LoadModel("Models/spring.obj");
 
+	//Pantalla = Model();
+	//Pantalla.LoadModel("Models/pantalla.obj");
+
 
 	// ----------- Elementos Star Wars -------------
 	CañoneraLAAT = Model();
 	CañoneraLAAT.LoadModel("Models/rep_la_at_gunship.obj");
-
 	FighterTank = Model();
 	FighterTank.LoadModel("Models/rep_hover_fightertank.obj");
-
 	ComandanteFordo = Model();
-	ComandanteFordo.LoadModel("Models/rep_inf_arctrooper.obj");
+	ComandanteFordo.LoadModel("Models/Fordo.obj");
+	FlipperSable = Model();
+	FlipperSable.LoadModel("Models/lightsaber.obj");
+
+	//Chopper Objeto Jerárquico Animado Instanciado Varias Veces (OJAIVV)
+	Chopper = Model();
+	Chopper.LoadModel("Models/SWRChopper.obj");
+	Cuerpo = Model();
+	Cuerpo.LoadModel("Models/Cuerpo.obj");
+	Rueda = Model();
+	Rueda.LoadModel("Models/Rueda.obj");
+	Cabeza = Model();
+	Cabeza.LoadModel("Models/Cabeza.obj");
+	Brazo_Izq = Model();
+	Brazo_Izq.LoadModel("Models/BrazoIzquierdo.obj");
+	Brazo_Der = Model();
+	Brazo_Der.LoadModel("Models/BrazoDerecho.obj");
 
 	// ----------- Elementos Kirby -------------
-	//Líneas añadidas
+
 	Kirby = Model();
 	Kirby.LoadModel("Models/kirby.obj");
 	Apple = Model();
@@ -491,25 +663,67 @@ int main()
 	Mandy = Model();
 	Mandy.LoadModel("Models/Mandy.obj");
 
-	ISoundEngine* soundEngine = createIrrKlangDevice();
+	Irwing = Model();
+	Irwing.LoadModel("Models/IrwinBanana.obj");
 
-	if (!soundEngine) {
-		// Manejo de error si no se pudo crear el motor de sonido
-		return 1;
+	Prisionero = Model();
+	Prisionero.LoadModel("Models/Prisoner_Corpse_Damage_0.obj");
+
+	Ojo = Model();
+	Ojo.LoadModel("Models/Hell eye.obj");
+
+	Mano = Model();
+	Mano.LoadModel("Models/JNlefthnd.obj");
+
+	Roca = Model();
+	Roca.LoadModel("Models/rtm_rock_space.obj");
+
+	Lava = Model();
+	Lava.LoadModel("Models/lava.obj");
+
+
+	ISoundEngine* soundEngine = nullptr;
+
+	if (avanzaMoneda = true) {
+		//printf("Sonido");
+		// Crear el motor de sonido
+		soundEngine = createIrrKlangDevice();
+
+		if (!soundEngine) {
+			// Manejo de error si no se pudo crear el motor de sonido
+			return 1;
+		}
 	}
-
 	// Ruta al archivo MP3 que deseas reproducir
-	const char* mp3FilePath = "Models/Kirby_s-Pinball-Land-Title-Theme.wav";
+	const char* mp3FilePath = "Models/Bowser-Peaches-_Official-Music-Video_-_-The-Super-Mario-Bros.-Movie.wav";
 
 	// Reproduce el archivo WAV
 	///*
 
-	//ISound* sound = soundEngine->play2D(mp3FilePath, true, false, true);
+	if (avanzaMoneda = true) {
+		// Cargar un sonido
+		ISound* sound = soundEngine->play2D(mp3FilePath, true, false, true);
+		//ISound* sound3dimens = soundEngine->play3D("Models/The Clone Wars_ ARC Trooper Theme _ EPIC VERSION.wav", vec3df(0, 0, 0), true, false, true);
+		if (sound) {
+			sound->setVolume(0.4f);
+		}
 
-	//if (!sound) {
-	//	// Manejo de error si no se pudo reproducir el archivo
-	//	return 1;
-	//}
+		//if (sound3dimens) {
+		//	sound3dimens->setVolume(1.0f);
+		//	sound->setIsPaused(false);
+		//	
+		//	sound3dimens->setPosition(vec3df(0.0f, 0.0f, 0.0f)); // establecer la posición en el espacio 3D
+		//	sound->setMaxDistance(230.0f);
+		//	float ListenerX = 0.0f;  // Coordenada X del oyente
+		//	float ListenerY = 0.0f;  // Coordenada Y del oyente
+		//	float ListenerZ = 0.0f;  // Coordenada Z del oyente
+		//}
+
+
+
+	}
+
+
 	//*/
 
 	// Espera
@@ -517,18 +731,29 @@ int main()
 
 
 
-	std::vector<std::string> skyboxFaces;
-	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_rt.tga");
-	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_lf.tga");
-	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_dn.tga");
-	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_up.tga");
-	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_bk.tga");
-	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_ft.tga");
+	std::vector<std::string> skyboxFacesDia;
+	skyboxFacesDia.push_back("Textures/Skybox/starWars_rt.tga"); //Right
+	skyboxFacesDia.push_back("Textures/Skybox/starWars_lf.tga"); //Left
+	skyboxFacesDia.push_back("Textures/Skybox/starWars_dn.tga"); //Down
+	skyboxFacesDia.push_back("Textures/Skybox/starWars_up.tga"); //Up
+	skyboxFacesDia.push_back("Textures/Skybox/starWars_bk.tga"); //Back
+	skyboxFacesDia.push_back("Textures/Skybox/starWars_ft.tga"); //Front
 
-	skybox = Skybox(skyboxFaces);
+	std::vector<std::string> skyboxFacesNoche;
+	skyboxFacesNoche.push_back("Textures/Skybox/starWarsNight_rt.tga");
+	skyboxFacesNoche.push_back("Textures/Skybox/starWarsNight_lf.tga");
+	skyboxFacesNoche.push_back("Textures/Skybox/starWarsNight_dn.tga");
+	skyboxFacesNoche.push_back("Textures/Skybox/starWarsNight_up.tga");
+	skyboxFacesNoche.push_back("Textures/Skybox/starWarsNight_bk.tga");
+	skyboxFacesNoche.push_back("Textures/Skybox/starWarsNight_ft.tga");
+
+
+	skybox = Skybox(skyboxFacesDia);
+
 
 	Material_brillante = Material(4.0f, 256);
 	Material_opaco = Material(0.3f, 4);
+
 
 
 	//luz direccional, sólo 1 y siempre debe de existir
@@ -537,12 +762,36 @@ int main()
 		0.0f, 0.0f, -1.0f);
 	//contador de luces puntuales
 	unsigned int pointLightCount = 0;
-	//Declaración de primer luz puntual
-	pointLights[0] = PointLight(1.0f, 0.0f, 0.0f,
-		0.0f, 1.0f,
-		-6.0f, 1.5f, 1.5f,
-		0.3f, 0.2f, 0.1f);
+
+
+	// =============	Declaración de la primera luz puntual	=======================
+
+
+	pointLights[0] = PointLight(
+		1.0f, 1.0f, 1.0f,   // RGB
+		40.0f, 80.0f,       // aIntensity - dIntensity
+		0.0f, 60.0f, 0.0f,   // La posición central del tablero
+		1.0f / 100.0f, 1.0f / 200.0f, 1.0f / 550.0f // Coeficientes de atenuación (Con, Lineal y Exponencial)
+	);
 	pointLightCount++;
+
+	pointLights[1] = PointLight(
+		1.0f, 0.0f, 0.0f,   // RGB
+		20.0f, 50.0f,       // aIntensity - dIntensity
+		0.0f, 55.0f, 420.0f,   // La posición central del tablero
+		1.0f / 100.0f, 1.0f / 100.0f, 1.0f / 100.0f // Coeficientes de atenuación (Con, Lineal y Exponencial)
+	);
+	pointLightCount++;
+
+	pointLights[2] = PointLight(
+		0.0f, 0.0f, 1.0f,   // RGB
+		20.0f, 50.0f,       // aIntensity - dIntensity
+		0.0f, 220.0f, -335.0f,   // La posición central del tablero
+		1.0f / 100.0f, 1.0f / 100.0f, 1.0f / 50.0f // Coeficientes de atenuación (Con, Lineal y Exponencial)
+	);
+	pointLightCount++;
+
+
 
 	unsigned int spotLightCount = 0;
 	//linterna
@@ -554,19 +803,10 @@ int main()
 		5.0f);
 	spotLightCount++;
 
-	//luz fija
-	spotLights[1] = SpotLight(0.0f, 1.0f, 0.0f,
-		1.0f, 2.0f,
-		5.0f, 10.0f, 0.0f,
-		0.0f, -5.0f, 0.0f,
-		1.0f, 0.0f, 0.0f,
-		15.0f);
-	spotLightCount++;
 
-	//se crean mas luces puntuales y spotlight 
 
 	GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0, uniformEyePosition = 0,
-		uniformSpecularIntensity = 0, uniformShininess = 0;
+		uniformSpecularIntensity = 0, uniformShininess = 0, uniformTextureOffset = 0;
 	GLuint uniformColor = 0;
 	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 2500.0f); //Campo de Visión
 
@@ -578,7 +818,6 @@ int main()
 	rotMonedaOffset = 5.0f;
 	avanzaMoneda = true;
 
-	//Valores canica
 	movCanicaX = 0.0f;
 	movCanicaY = 0.0f;
 	movCanicaZ = 0.0f;
@@ -590,27 +829,56 @@ int main()
 	avanzaCanicaY = false;
 	avanzaCanicaZ = false;
 	movPalancaOffset = 0.15f;
-	palancaLista = false;
+	lanzamientoCanica = false;
 
-	//Líneas añadidas
+
+
 	//Valores Animación placeholder
-	CanicaAnim = true;
+	CanicaAnim = false;
 	Canica1Edo = 0; //La canica empieza en el estado 0
 	CanX = 0.0f;
 	velCanX = 3.0f;
 	CanZ = 0.0f;
 	velCanZ = 3.0f;
+
+	Canica1Anim = false;
+
+	//Variables de PUNTUACION DEL PINBALL QUE SE VEN EN EL OBJETO
+	decU, decV, numU, numV = 0.0f;
+	num = 0;
+	num2 = 0;
+
+
 	//Valores Canica 2
-	CanicaAnim2 = true;
+	CanicaAnim2 = false;
 	Canica2Edo = 0;
 	Can2X = 0.0f;
 	Can2Z = 0.0f;
 	rebote = 5;
+
+	Canica2Anim = false;
+
 	//Velocidad de animacion simple
-	newVel = 1.0f;
+	newVel = 2.0f;
+
+	//Valores control fin animación canica
+	finAnim1 = false;
+	finAnim2 = false;
+	finAnim3 = false;
+
+	//Valores animación objeto jerárquico
+	giroChopper = 0.0f;
+	saltoChopper = 0.0f;
+	giroChopper2 = 0.0f;
+	velGiroChopper = 25.0f;
+	saltoOffset = 0.7f;
+	chopper1 = false;
+	chopper2 = false;
 
 	//Valores Keyframes
 	glm::vec3 posblackhawk = glm::vec3(2.0f, 0.0f, 0.0f);
+	CanicaAnim3 = false;
+	Canica3Anim = false;
 
 	//---------PARA TENER KEYFRAMES GUARDADOS NO VOLATILES QUE SIEMPRE SE UTILIZARAN SE DECLARAN AQUÍ
 	KeyFrame[0].movAvion_x = 0.0f;
@@ -624,10 +892,8 @@ int main()
 	KeyFrame[2].movAvion_x = 0.0f;
 	KeyFrame[2].movAvion_y = 1010.0f;
 
-
 	KeyFrame[3].movAvion_x = -100.0f;
 	KeyFrame[3].movAvion_y = 1100.0f;
-
 
 	KeyFrame[4].movAvion_x = -180.0f;
 	KeyFrame[4].movAvion_y = 900.0f;
@@ -672,6 +938,8 @@ int main()
 	KeyFrame[17].movAvion_y = -30.0f;
 	//---------FIN DE KEYFRAMES GUARDADOS NO VOLÁTILES
 
+
+
 	////Loop mientras no se cierra la ventana
 	while (!mainWindow.getShouldClose())
 	{
@@ -690,20 +958,38 @@ int main()
 		else if (mainWindow.getCamaraVis() == 2) {
 			camera = &staticCamera; // Cambiar a la cámara estática
 		}
+		else if (mainWindow.getCamaraVis() == 3) {
+			camera = &avatarCamera; // Cambiar a la cámara del avatar
+		}
 
 
 		glm::mat4 viewMatrix = camera->calculateViewMatrix();
 		// Usar viewMatrix para tus transformaciones y enviarla a los shaders
+
+		//	Posición de la camara del Avatar
+		glm::vec3 poscam = avatarCamera.getCameraPosition();
+		glm::vec3 dircam = avatarCamera.getCameraDirection();
+		float angulo_cam = atan(dircam.z / dircam.x);
+		angulo_cam += (90 * toRadians);
+		if (dircam.x > 0) {
+			angulo_cam += (180 * toRadians);
+		}
+		glm::vec3 posAvatar = glm::vec3(-80.0f, 75.0f, 300.0f);
+
+
+		posAvatar.x = poscam.x + 1;
+		posAvatar.z = poscam.z;
+		posAvatar.y = poscam.y - 20;
 
 
 
 		if (mainWindow.getMonedaPinball()) {
 			if (avanzaMoneda)
 			{
-				if (movMoneda < 105.0f)
+				if (movMoneda < 160.0f)
 				{
 					movMoneda += movMonedaOffset * deltaTime;
-					printf("avanza%f \n ", movMoneda);
+					//printf("avanza%f \n ", movMoneda);
 					rotMoneda += rotMonedaOffset * deltaTime;
 				}
 				else
@@ -719,7 +1005,7 @@ int main()
 			//printf("avanza la canica PA ARRIBA%f \n ", movMoneda);
 			if (movCanicaZ < 35.0f) {
 				movCanicaZ += movCanicaOffset * deltaTime;
-				printf("avanza%f \n ", movMoneda);
+				//printf("avanza%f \n ", movMoneda);
 				rotCanica += rotCanicaOffset * deltaTime;
 			}
 			else
@@ -730,17 +1016,28 @@ int main()
 		}
 
 		if (avanzaCanicaX == true) {
-			printf("avanza la canica PA LA DERECHA%f \n ", movMoneda);
+			//printf("avanza la canica PA LA DERECHA%f \n ", movMoneda);
 			if (movCanicaX < 205.0f) {
 				movCanicaX += movCanicaOffset * deltaTime;
-				printf("avanza%f \n ", movMoneda);
+				//printf("avanza%f \n ", movMoneda);
 				rotCanica += rotCanicaOffset * deltaTime;
 			}
 			else
 			{
 				avanzaCanicaX = false;
 				palancaLista = true;
-				//CanicaAnim = true; //Línea añadida
+
+				//Activamos Canica 1
+				if (!finAnim1)
+					CanicaAnim = true;
+				else if (!finAnim2 && finAnim1) //Activamos Canica 2
+					CanicaAnim2 = true;
+				else if (!finAnim3 && finAnim2)
+					CanicaAnim3 = true;
+
+				//Se reinician los valores de la canica 0
+				movCanicaX = 0.0f;
+				movCanicaZ = 0.0f;
 			}
 		}
 
@@ -748,29 +1045,52 @@ int main()
 			if (mainWindow.getActivaPalanca() == true) {
 				if (movPalanca < 12.0f) {
 					movPalanca += movPalancaOffset * deltaTime;
-					printf("avanza la palanca con un valor de : %f \n ", movPalanca);
+					//printf("avanza la palanca con un valor de : %f \n ", movPalanca);
 				}
-				else {
-					printf("La palanca alcanzo su valor máximo de estiramiento\n");
-					palancaLista = false;
-				}
-			}
-			/*
-			else if(mainWindow.getActivaPalanca() == false)
-			{
-				movPalanca = 0.0f;
-			}
-			*/
 
+				else {
+					//printf("La palanca alcanzo su valor máximo de estiramiento\n");
+					palancaLista = false;
+					lanzamientoCanica = true;
+				}
+			}
 		}
 
-		//Líneas añadidas
+		//En caso de que el usuario quiera no llegar al limite de la palanca
+		if (palancaLista == true) {
+			if (mainWindow.getActivaLanzamiento() == true) {
+				movPalanca = 0.0f;
+				palancaLista = false;
+			}
+		}
+
+
+		if (lanzamientoCanica == true) {
+			movPalanca = 0.0f;
+			//printf("entraste a lanzamiento : %f \n ", movPalanca);
+			//Lanzamos Canica 1
+			if (!finAnim1) {
+				Canica1Anim = true;
+				lanzamientoCanica = false;
+			}
+			else if (!finAnim2 && finAnim1) {
+				Canica2Anim = true;
+				lanzamientoCanica = false;
+			}
+			else if (!finAnim3 && finAnim2) {
+				Canica3Anim = true;
+			}
+		}
+
+
+
 		//Aniumación Normal Canica
 		if (CanicaAnim) { //Si la canica está en posición
-			if (mainWindow.getCanica1() == true) { //Activación de Animación1
+			if (Canica1Anim) { //Activación de 
+
 				//Estado 0 de Canica
 				if (Canica1Edo == 0) {
-					if (CanZ < 1010.f) {
+					if (CanZ < 1010.0f) {
 						CanZ += 18.0f * deltaTime;
 					}
 					else {
@@ -781,7 +1101,7 @@ int main()
 				if (Canica1Edo == 1) {
 					if (CanX > -205.0f) {
 						CanZ += 2.5f * deltaTime * newVel;
-						CanX -= velCanX * deltaTime *newVel;
+						CanX -= velCanX * deltaTime * newVel;
 					}
 					else {
 						Canica1Edo = 2;
@@ -790,8 +1110,8 @@ int main()
 				//Estado 2 Canica
 				if (Canica1Edo == 2) { //Choca con nave
 					if (CanZ > 900.0f) {
-						CanZ -= velCanZ * deltaTime *newVel;
-						CanX -= 1.0f * deltaTime *newVel;
+						CanZ -= velCanZ * deltaTime * newVel;
+						CanX -= 1.0f * deltaTime * newVel;
 					}
 					else {
 						Canica1Edo = 3;
@@ -800,8 +1120,8 @@ int main()
 				//Estado 3 Canica
 				if (Canica1Edo == 3) {
 					if (CanX > -420.0f) {
-						CanX -= velCanX * deltaTime*newVel;
-						CanZ -= 0.8f * deltaTime*newVel;
+						CanX -= velCanX * deltaTime * newVel;
+						CanZ -= 0.8f * deltaTime * newVel;
 					}
 					else {
 						Canica1Edo = 4;
@@ -810,19 +1130,18 @@ int main()
 				//Estado 4 Canica
 				if (Canica1Edo == 4) {
 					if (CanZ > 545.0f) {
-						CanZ -= velCanZ * deltaTime*newVel;
-						CanX += 2.0f * deltaTime*newVel;
+						CanZ -= velCanZ * deltaTime * newVel;
+						CanX += 2.0f * deltaTime * newVel;
 					}
 					else {
 						Canica1Edo = 5;
-						//printf("%f\n", CanX);
 					}
 				}
 				//Estado 5 Canica
 				if (Canica1Edo == 5) {
 					if (CanX < -58.0f) {
-						CanX += velCanX * deltaTime*newVel;
-						CanZ += 1.3f * deltaTime*newVel;
+						CanX += velCanX * deltaTime * newVel;
+						CanZ += 1.3f * deltaTime * newVel;
 					}
 					else {
 						Canica1Edo = 6;
@@ -831,8 +1150,8 @@ int main()
 				//Estado 6 canica
 				if (Canica1Edo == 6) {
 					if (CanZ > 240.0f) {
-						CanZ -= velCanZ * deltaTime*newVel;
-						CanX -= 1.0f * deltaTime*newVel;
+						CanZ -= velCanZ * deltaTime * newVel;
+						CanX -= 1.0f * deltaTime * newVel;
 					}
 					else {
 						Canica1Edo = 7;
@@ -860,16 +1179,22 @@ int main()
 				}
 				//Estado canica 9
 				if (Canica1Edo == 9) {
-					if (CanZ > -30.0f) {
+					if (CanZ > -40.0f) {
 						CanZ -= 3.0 * deltaTime * newVel;
+					}
+					else {
+						CanicaAnim = false;
+						finAnim1 = true;
+						avanzaCanicaZ = true;
 					}
 				}
 			}
 		}
 
+
 		//Animación Normal Canica 2
 		if (CanicaAnim2) {
-			if (mainWindow.getCanica2() == true) {
+			if (Canica2Anim) {
 				//Canica 2 edo 0
 				if (Canica2Edo == 0) {
 					if (Can2Z < 1000.0f) {
@@ -937,6 +1262,7 @@ int main()
 					}
 					else {
 						Canica2Edo = 7;
+						chopper2 = true;
 					}
 				}
 				//canica2 edo7
@@ -947,6 +1273,7 @@ int main()
 					}
 					else {
 						Canica2Edo = 8;
+						chopper2 = false;
 					}
 				}
 				//canica2 edo8
@@ -1027,7 +1354,6 @@ int main()
 					}
 					else {
 						Canica2Edo = 16;
-						printf("%f", Can2Z);
 					}
 				}
 				//can2 edo16
@@ -1062,6 +1388,7 @@ int main()
 					}
 					else {
 						Canica2Edo = 19;
+						chopper1 = true;
 					}
 				}
 				//can2 edo19
@@ -1072,6 +1399,7 @@ int main()
 					}
 					else {
 						Canica2Edo = 20;
+						chopper1 = false;
 					}
 				}
 				//can2 edo20
@@ -1079,9 +1407,53 @@ int main()
 					if (Can2Z > -35.0f) {
 						Can2Z -= 3.0f * deltaTime * newVel;
 					}
+					else {
+						CanicaAnim2 = false;
+						finAnim2 = true;
+						avanzaCanicaZ = true;
+					}
 				}
 			}
 		}
+
+		//Animaciones OJAIVV
+		if (chopper1) {
+			giroChopper += velGiroChopper * deltaTime;
+			saltoChopper1 += saltoOffset * deltaTime;
+		}
+
+		if (!chopper1 && saltoChopper1 > 0.0f) {
+			giroChopper += velGiroChopper * deltaTime;
+			saltoChopper1 -= saltoOffset * deltaTime;
+		}
+
+		if (chopper2) {
+			giroChopper2 += velGiroChopper * deltaTime;
+			saltoChopper += saltoOffset * deltaTime;
+		}
+
+		if (!chopper2 && saltoChopper > 0.0f) {
+			giroChopper2 += velGiroChopper * deltaTime;
+			saltoChopper -= saltoOffset * deltaTime;
+		}
+		if (playIndex == 5) {
+			chopper1 = true;
+		}
+		if (playIndex == 6) {
+			chopper1 = false;
+		}
+		if (playIndex == 11) {
+			chopper1 = true;
+		}
+		if (playIndex == 12) {
+			chopper1 = false;
+		}
+
+		glm::vec3 cameraPosition = glm::vec3(205.0f + CanX, 500.5f, 515.5f - CanZ); // Ajusta según sea necesario
+
+		// Calcula el nuevo yaw y pitch si es necesario 
+		GLfloat cameraYaw = -90.0f; // Por ejemplo, mirando directamente hacia el eje -Z
+		GLfloat cameraPitch = 0.0f; // Mantener el horizonte nivelado
 
 
 
@@ -1100,20 +1472,32 @@ int main()
 
 		// ---------MANEJO DE ILUMINACIÓN PARA CICLO DE DÍA Y DE NOCHE-----------
 
-		if (contadorDiaNoche <= 1.0f and dia) {
-			contadorDiaNoche += deltaTime * 0.0002f;
+		if (dia) {
+			if (contadorDiaNoche <= 1.0f) {
+				contadorDiaNoche += deltaTime * 0.002f;
+				skybox = Skybox(skyboxFacesDia);
+				skyboxDia = true;
+			}
+			else {
+				dia = false;
+				noche = true;
+				skyboxDia = false;
+				skybox = Skybox(skyboxFacesNoche);
+			}
 		}
-		else if (contadorDiaNoche >= 1.0f and dia) {
-			dia = false;
+		if (noche) {
+			if (contadorDiaNoche >= 0.0f) {
+				contadorDiaNoche -= deltaTime * 0.002f;
+				skybox = Skybox(skyboxFacesNoche);
+				skyboxNoche = true;
+			}
+			else {
+				dia = true;
+				noche = false;
+				skyboxNoche = false;
+				skybox = Skybox(skyboxFacesDia);
+			}
 		}
-		else if (contadorDiaNoche >= 0.0f and !dia) {
-			contadorDiaNoche -= deltaTime * 0.0002f;
-		}
-		else if (contadorDiaNoche <= 0.0f and !dia) {
-			dia = true;
-		}
-
-		//printf("\nContador = %f", contadorDiaNoche);
 		mainLight.ChangeDiffuseAmbient(contadorDiaNoche, 0.3);
 
 
@@ -1132,6 +1516,11 @@ int main()
 		uniformView = shaderList[0].GetViewLocation();
 		uniformEyePosition = shaderList[0].GetEyePositionLocation();
 		uniformColor = shaderList[0].getColorLocation();
+		uniformTextureOffset = shaderList[0].getOffsetLocation();
+
+		//Offset para textura score
+		uniformTextureOffset = shaderList[0].getOffsetLocation();
+
 
 		//información en el shader de intensidad especular y brillo
 		uniformSpecularIntensity = shaderList[0].GetSpecularIntensityLocation();
@@ -1152,50 +1541,115 @@ int main()
 		shaderList[0].SetPointLights(pointLights, pointLightCount);
 		shaderList[0].SetSpotLights(spotLights, spotLightCount);
 
+
 		//-------Para Keyframes
-		inputKeyframes(mainWindow.getsKeys());
-		animate(); 
+		if (CanicaAnim3)
+			inputKeyframes(mainWindow.getsKeys());
+		animate();
+
 
 		// -----------= Definición de Matrices y Matrices de Apoyo =-------------
 		glm::mat4 model(1.0);
 		glm::mat4 modelaux(1.0);
 		glm::mat4 modelauxCuerpoPinball(1.0);
 		glm::mat4 modelauxFlipper(1.0);
+		glm::mat4 modelauxKirbyC(1.0);
+		glm::mat4 modelauxCuerpoChopper(1.0);
+
+		glm::vec2 toffset = glm::vec2(0.0f, 0.0f);
 
 
 		glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
 
-		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(0.0f, -1.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(30.0f, 1.0f, 30.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
 
-		pisoTexture.UseTexture();
-		Material_opaco.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		meshList[2]->RenderMesh();
 
 		// ---------OBJETOS DE BILLY-----------
 				//Billy
 		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, -80.0f));
+		model = glm::translate(model, glm::vec3(-70.0f, 30.0f, 500.0f));
 		model = glm::scale(model, glm::vec3(5.0f, 5.0f, 5.0f));
+		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, 90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Billy.RenderModel();
 
 		//Grim (Puro Hueso pa los compas)
 		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(20.0f, 0.0f, -80.0f));
+		model = glm::translate(model, glm::vec3(60.0f, 64.0f, 360.0f));
 		model = glm::scale(model, glm::vec3(5.0f, 5.0f, 5.0f));
+		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Grim.RenderModel();
 
 		//Mandy
 		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(40.0f, 0.0f, -80.0f));
+		model = glm::translate(model, glm::vec3(-60.0f, 38.0f, 470.0f));
 		model = glm::scale(model, glm::vec3(5.0f, 5.0f, 5.0f));
+		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Mandy.RenderModel();
+
+		//Irwing
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(-45.0f, 30.0f, 500.0f));
+		model = glm::scale(model, glm::vec3(5.0f, 5.0f, 5.0f));
+		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Irwing.RenderModel();
+
+		//Prisionero 1
+		model = modelauxCuerpoPinball;
+		model = glm::translate(model, glm::vec3(-80.0f, 64.0f, 360.0f));
+		model = glm::scale(model, glm::vec3(0.2f, 0.15f, 0.2f));
+		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Prisionero.RenderModel();
+
+		//Prisionero 2
+		model = modelauxCuerpoPinball;
+		model = glm::translate(model, glm::vec3(30.0f, 64.0f, 360.0f));
+		model = glm::scale(model, glm::vec3(0.2f, 0.15f, 0.2f));
+		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Prisionero.RenderModel();
+
+		//Ojo1
+		model = modelauxCuerpoPinball;
+		model = glm::translate(model, glm::vec3(-80.0f, 75.0f, 300.0f));
+		model = glm::scale(model, glm::vec3(90.0f, 90.0f, 90.0f));
+		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, 180 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Ojo.RenderModel();
+
+		//Ojo2
+		model = modelauxCuerpoPinball;
+		model = glm::translate(model, glm::vec3(30.0f, 75.0f, 300.0f));
+		model = glm::scale(model, glm::vec3(90.0f, 90.0f, 90.0f));
+		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, 180 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Ojo.RenderModel();
+
+		//Mano
+		model = modelauxCuerpoPinball;
+		model = glm::translate(model, glm::vec3(-90.0f, 50.0f, 450.0f));
+		model = glm::scale(model, glm::vec3(5.0f, 5.0f, 5.0f));
+		model = glm::rotate(model, 100 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Mano.RenderModel();
+
+		//Roca
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(100.0f, 5.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Roca.RenderModel();
+
 
 		// ---------OBJETOS DE STAR WARS-----------
 		//Cañonera 1
@@ -1235,15 +1689,89 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		ComandanteFordo.RenderModel();
 
+		//Chopper 1
+		//Cuerpo
+		model = modelauxCuerpoPinball;
+		model = glm::translate(model, glm::vec3(0.0f, 230.0f + saltoChopper1, -265.0f));
+		model = glm::scale(model, glm::vec3(12.5f, 12.5f, 12.5f));
+		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		modelauxCuerpoChopper = model;
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		Cuerpo.RenderModel();
+		//Cabeza
+		model = modelauxCuerpoChopper;
+		model = glm::translate(model, glm::vec3(0.0f, 1.3f, 0.0f));
+		model = glm::rotate(model, giroChopper * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		Cabeza.RenderModel();
+		//Brazo Izquierdo
+		model = modelauxCuerpoChopper;
+		model = glm::translate(model, glm::vec3(0.45f, 1.5f, 0.0f));
+		//model = glm::rotate(model, -15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		Brazo_Izq.RenderModel();
+		//Brazo Derecho
+		model = modelauxCuerpoChopper;
+		model = glm::translate(model, glm::vec3(-0.45f, 1.5f, 0.0f));
+		//model = glm::rotate(model, -15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		Brazo_Der.RenderModel();
+
+		//Chopper 2
+		//Cuerpo
+		model = modelauxCuerpoPinball;
+		model = glm::translate(model, glm::vec3(-35.0f, 274.0f + saltoChopper, -438.0f));
+		model = glm::scale(model, glm::vec3(12.5f, 12.5f, 12.5f));
+		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		modelauxCuerpoChopper = model;
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		Cuerpo.RenderModel();
+		//Cabeza
+		model = modelauxCuerpoChopper;
+		model = glm::translate(model, glm::vec3(0.0f, 1.3f, 0.0f));
+		model = glm::rotate(model, giroChopper2 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		Cabeza.RenderModel();
+		//Brazo Izquierdo
+		model = modelauxCuerpoChopper;
+		model = glm::translate(model, glm::vec3(0.45f, 1.5f, 0.0f));
+		//model = glm::rotate(model, -15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		Brazo_Izq.RenderModel();
+		//Brazo Derecho
+		model = modelauxCuerpoChopper;
+		model = glm::translate(model, glm::vec3(-0.45f, 1.5f, 0.0f));
+		//model = glm::rotate(model, -15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		Brazo_Der.RenderModel();
 
 		// --------- OBJETOS DE KIRBY -----------
-		// Líneas añadidas
+
 		//Kirby
 		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(60.0f, 0.0f, -80.0f));
-		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
+		model = glm::translate(model, posAvatar);
+		modelauxKirbyC = model;
+		model = glm::scale(model, glm::vec3(65.0f, 65.0f, 65.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Kirby.RenderModel();
+
+		//Estrella
+		model = modelauxKirbyC;
+		model = glm::translate(model, glm::vec3(0.0f, 33.25f, 0.0f));
+		model = glm::scale(model, glm::vec3(35.0f, 35.0f, 35.0f));
+		model = glm::rotate(model, 90 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, 90 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		estrellaTexture.UseTexture();
+		meshList[0]->RenderMesh();
 
 		//Whispy Woods
 		model = glm::mat4(1.0);
@@ -1293,6 +1821,31 @@ int main()
 
 		// --------- OBJETOS DE PINBALL -----------
 
+		//Para apagar la primera PointLight [Verde]
+		if (mainWindow.getapagaLuzLinternaVerde())
+		{
+			shaderList[0].SetPointLights(&pointLights[0], 1);
+		}
+
+		//Para apagar la segunda PointLight [Roja]
+		if (mainWindow.getapagaLuzLinternaRoja())
+		{
+			shaderList[0].SetPointLights(&pointLights[1], 1);
+		}
+
+		//Para apagar la segunda PointLight [Azul]
+		if (mainWindow.getapagaLuzLinternaAzul())
+		{
+			shaderList[0].SetPointLights(&pointLights[2], 1);
+		}
+
+		// Para apagar la linterna 
+		if (mainWindow.getapagaLuz())
+		{
+			shaderList[0].SetSpotLights(&spotLights[1], 1);
+		}
+
+
 		///*
 		//Tablero de Pinball
 		model = glm::mat4(1.0);
@@ -1302,6 +1855,7 @@ int main()
 		modelauxCuerpoPinball = model;
 		model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		Pinball.RenderModel();
 		//*/
 
@@ -1313,6 +1867,7 @@ int main()
 		model = glm::rotate(model, -10 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(10.0f, 10.0f, 10.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		Base_Palanca.RenderModel();
 
 		//Palanca de Pinball
@@ -1324,15 +1879,28 @@ int main()
 		model = glm::rotate(model, -10 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(10.0f, 10.0f, 10.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		Palanca.RenderModel();
+
+		//Pantalla de SCORE
+		//model = modelaux;
+		//model = glm::translate(model, glm::vec3(0.0f, 470.0f, -700.0f));
+		//model = glm::scale(model, glm::vec3(10.6f, 10.0f, 10.0f));
+		//model = glm::rotate(model, 90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		//glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		//glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
+		//glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera->calculateViewMatrix()));
+		//Pantalla.RenderModel();
+
 
 		//Resorte
 		model = modelaux;
-		model = glm::translate(model, glm::vec3(0.0f, 10.35f, -20.5f));
+		model = glm::translate(model, glm::vec3(0.0f, 9.2f, -25.5f));
 		model = glm::rotate(model, -90 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(4.0f, 5.2f - (movPalanca / 3), 4.0f));
+		model = glm::scale(model, glm::vec3(3.5f, 5.2f - (movPalanca / 3), 3.5f));
 		//model = glm::scale(model, glm::vec3(1.0f, movPalanca, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		Resorte.RenderModel();
 
 
@@ -1346,7 +1914,9 @@ int main()
 		model = glm::rotate(model, -rotMoneda * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(8.5f, 8.5f, 8.5f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		Coin.RenderModel();
+
 
 		//Canica del Pinball
 		model = glm::mat4(1.0);
@@ -1356,17 +1926,23 @@ int main()
 		model = glm::rotate(model, -rotCanica * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(3.5f, 3.5f, 3.5f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Canica.RenderModel();
+		Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		if (!CanicaAnim)
+			Canica.RenderModel();
 
-		//Líneas añadidas
 		//Canica placeholder para animación
 		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(205.0f, 42.5f, 510.5f));
+		model = glm::translate(model, glm::vec3(205.0f, 42.5f, 510.5));
 		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f)); //Rotación del modelo para match plano
 		model = glm::translate(model, glm::vec3(CanX, 0.0f, -CanZ));
+		//model = glm::rotate(model, -rotCanica * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		//model = glm::rotate(model, -rotCanica * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(3.5f, 3.5f, 3.5f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Canica.RenderModel();
+		Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		if (CanicaAnim)
+			Canica.RenderModel();
+
 
 		//Canica placeholder para animación 2
 		model = glm::mat4(1.0);
@@ -1375,17 +1951,32 @@ int main()
 		model = glm::translate(model, glm::vec3(Can2X, 0.0f, -Can2Z));
 		model = glm::scale(model, glm::vec3(3.5f, 3.5f, 3.5f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Canica.RenderModel();
+		Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		if (CanicaAnim2)
+			Canica.RenderModel();
 
 		//Canica placeholder para keyframes
 		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(205.0f, 42.5f, 510.5f));
+		model = glm::translate(model, glm::vec3(205.0f, 42.5, 510.5f));
 		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f)); //Rotación del modelo para match plano
 		posblackhawk = glm::vec3(posXavion + movAvion_x, posYavion, posZavion - movAvion_y);
 		model = glm::translate(model, posblackhawk);
 		model = glm::scale(model, glm::vec3(3.5f, 3.5f, 3.5f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Canica.RenderModel();
+		Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		if (CanicaAnim3)
+			Canica.RenderModel();
+
+
+		//------------ FLIPPER IZQUIERDO STAR WARS ----------------
+		model = modelauxCuerpoPinball;
+		model = glm::translate(model, glm::vec3(-230.0f, 215.0f, -280.0f));
+		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(8.5f, 8.5f, 8.5f));
+		model = glm::rotate(model, glm::radians(mainWindow.getFlipperISW()), glm::vec3(-1.0f, 0.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		FlipperSable.RenderModel();
 
 		//------------ FLIPPER IZQUIERDO ----------------
 		model = modelauxCuerpoPinball;
@@ -1409,7 +2000,7 @@ int main()
 
 		// --Sección Izquierda de Pirámides
 		//Pirámide Central
-		
+
 		model = modelauxCuerpoPinball;
 		model = glm::translate(model, glm::vec3(-170.0f, 62.8f, 427.0f));
 		model = glm::scale(model, glm::vec3(40.0f, 40.0f, 40.0f));
@@ -1418,12 +2009,11 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera->calculateViewMatrix()));
-		color = glm::vec3(1.0f, 0.0f, 0.0f);
-		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
-		meshList[0]->RenderMesh();
+		rocosaTexture.UseTexture();
+		meshList[4]->RenderMesh();
 
 		//Piramide Flipper
-		
+
 		model = modelauxCuerpoPinball;
 		model = glm::translate(model, glm::vec3(-125.0f, 44.9f, 450.0f));
 		modelauxFlipper = model;
@@ -1432,14 +2022,13 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera->calculateViewMatrix()));
-		color = glm::vec3(1.0f, 0.0f, 0.0f);
-		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
-		meshList[0]->RenderMesh();
+		rocosaTexture.UseTexture();
+		meshList[4]->RenderMesh();
 
 
 
 		//Extremo izq
-		
+
 		model = modelauxCuerpoPinball;
 		model = glm::translate(model, glm::vec3(-183.0f, 62.0f, 375.0f));
 		model = glm::scale(model, glm::vec3(25.0f, 25.0f, 25.0f));
@@ -1448,13 +2037,12 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera->calculateViewMatrix()));
-		color = glm::vec3(1.0f, 0.0f, 0.0f);
-		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
-		meshList[0]->RenderMesh();
+		rocosaTexture.UseTexture();
+		meshList[4]->RenderMesh();
 
 		// --Sección Derecha de Pirámides
 		//Pirámide Central
-		
+
 		model = modelauxCuerpoPinball;
 		model = glm::translate(model, glm::vec3(122.0f, 62.8f, 427.0f));
 		model = glm::scale(model, glm::vec3(40.0f, 40.0f, 40.0f));
@@ -1463,9 +2051,8 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera->calculateViewMatrix()));
-		color = glm::vec3(1.0f, 0.0f, 0.0f);
-		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
-		meshList[0]->RenderMesh();
+		rocosaTexture.UseTexture();
+		meshList[4]->RenderMesh();
 
 		//Piramide Flipper
 		modelaux = model;
@@ -1476,9 +2063,8 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera->calculateViewMatrix()));
-		color = glm::vec3(1.0f, 0.0f, 0.0f);
-		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
-		meshList[0]->RenderMesh();
+		rocosaTexture.UseTexture();
+		meshList[4]->RenderMesh();
 
 		//Extremo der
 		modelaux = model;
@@ -1490,9 +2076,120 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera->calculateViewMatrix()));
-		color = glm::vec3(1.0f, 0.0f, 0.0f);
-		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
-		meshList[0]->RenderMesh();
+		rocosaTexture.UseTexture();
+		meshList[4]->RenderMesh();
+
+		//Aminación unidad
+		if (num == 1) {
+			numU = 0.0f;
+			numV = 0.0f;
+		}
+		if (num == 2) {
+			numU = 0.25f;
+			numV = 0.0f;
+		}
+		if (num == 3) {
+			numU = 0.5f;
+			numV = 0.0f;
+		}
+		if (num == 4) {
+			numU = 0.75f;
+			numV = 0.0f;
+		}
+		if (num == 5) {
+			numU = 0.0f;
+			numV = -0.33f;
+		}
+		if (num == 6) {
+			numU = 0.25f;
+			numV = -0.33f;
+		}
+		if (num == 7) {
+			numU = 0.5f;
+			numV = -0.33f;
+		}
+		if (num == 8) {
+			numU = 0.75f;
+			numV = -0.33f;
+		}
+		if (num == 9) {
+			numU = 0.0f;
+			numV = -0.67f;
+		}
+		if (num == 0) {
+			numU = 0.25f;
+			decV = -0.67f;
+		}
+
+		//Aminación decena
+		if (num2 == 1) {
+			decU = 0.0f;
+			decV = 0.0f;
+		}
+		if (num2 == 2) {
+			decU = 0.25f;
+			decV = 0.0f;
+		}
+		if (num2 == 3) {
+			decU = 0.5f;
+			decV = 0.0f;
+		}
+		if (num2 == 4) {
+			decU = 0.75f;
+			decV = 0.0f;
+		}
+		if (num2 == 5) {
+			decU = 0.0f;
+			decV = -0.33f;
+		}
+		if (num2 == 6) {
+			decU = 0.25f;
+			decV = -0.33f;
+		}
+		if (num2 == 7) {
+			decU = 0.5f;
+			decV = -0.33f;
+		}
+		if (num2 == 8) {
+			decU = 0.75f;
+			decV = -0.33f;
+		}
+		if (num2 == 9) {
+			decU = 0.0f;
+			decV = -0.67f;
+		}
+		if (num2 == 0) {
+			decU = 0.25f;
+			decV = -0.67f;
+		}
+
+
+
+
+		//Score
+		//Unidades
+		//toffset = glm::vec2(numU, numV);
+		//model = glm::mat4(1.0);
+		//model = glm::translate(model, glm::vec3(120.0f, 545.0f, -669.0f));
+		//model = glm::scale(model, glm::vec3(99.0f, 99.0f, 99.0f));
+		//model = glm::rotate(model, 90 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		//glUniform2fv(uniformTextureOffset, 1, glm::value_ptr(toffset));
+		//glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		//NumerosTexture.UseTexture();
+		//Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		//meshList[2]->RenderMesh();
+
+		////Decenas
+		//toffset = glm::vec2(decU, decV);
+		//model = glm::mat4(1.0);
+		//model = glm::translate(model, glm::vec3(0.0f, 545.0f, -669.0f));
+		//model = glm::scale(model, glm::vec3(99.0f, 99.0f, 99.0f));
+		//model = glm::rotate(model, 90 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		//glUniform2fv(uniformTextureOffset, 1, glm::value_ptr(toffset));
+		//glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		//NumerosTexture.UseTexture();
+		//Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		//meshList[2]->RenderMesh();
 
 
 
@@ -1524,15 +2221,15 @@ int main()
 
 void inputKeyframes(bool* keys)
 {
-	if (keys[GLFW_KEY_0]) 
+	if (Canica3Anim)
 	{
-		printf("Cero\n");
+		//printf("Cero\n");
 		if (reproduciranimacion < 1)
 		{
-			printf("dentro de reproducción\n");
+			//printf("dentro de reproducción\n");
 			if (play == false && (FrameIndex > 1))
 			{
-				printf("dentro de play\n");
+				//printf("dentro de play\n");
 				resetElements();
 				//First Interpolation				
 				interpolation();
@@ -1540,23 +2237,18 @@ void inputKeyframes(bool* keys)
 				playIndex = 0;
 				i_curr_steps = 0;
 				reproduciranimacion++;
-				printf("\n presiona 0 para habilitar reproducir de nuevo la animación'\n");
+				//printf("\n presiona 0 para habilitar reproducir de nuevo la animación'\n");
 				habilitaranimacion = 0;
 
 			}
 			else
 			{
 				play = false;
-
+				CanicaAnim3 = false;
+				finAnim3 = true;
 			}
 		}
-	}
-	if (keys[GLFW_KEY_9])
-	{
-		if (habilitaranimacion < 1 && reproduciranimacion>0)
-		{
-			printf("Ya puedes reproducir de nuevo la animación con la tecla de barra espaciadora'\n");
-			reproduciranimacion = 0;
+		else {
 
 		}
 	}
