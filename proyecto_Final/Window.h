@@ -17,16 +17,19 @@ public:
 
 	//-- VARIABLES QUE SE UTILIZAN EN EL CÓDIGO ---- //
 	GLfloat getFlipperI() { return FlipperI; }
+	GLfloat getFlipperISW() { return FlipperISW; }
 	GLfloat getFlipperD() { return FlipperD; }
 	GLfloat getPalanca() { return Palanca; }
 	GLfloat getMonedaPinball() { return MonedaPinball; }
 	GLfloat getActivaPalanca() { return ActivaPalanca; }
+	GLfloat getActivaLanzamiento() { return  ActivaLanzamiento; }
 	GLboolean getapagaLuz() { return apagaluz; }	//Metodo para apagar la luz de PINBALL 1
 	int getCamaraVis() { return CamaraVis; }
 	GLboolean getapagaLuzLinternaVerde() { return apagaluzLinternaVerde; }	//Metodo para apagar la luz
 	GLboolean getapagaLuzLinternaRoja() { return apagaluzLinternaRoja; }	//Metodo para apagar la luz
 	GLboolean getapagaLuzLinternaAzul() { return apagaluzLinternaAzul; }	//Metodo para apagar la luz
 	GLfloat getCanica1() { return Canica1; }
+	GLfloat getCanica2() { return Canica2; }
 
 	// ---------------------------------------------- //
 
@@ -69,14 +72,17 @@ private:
 	//-- VARIABLES QUE SE UTILIZAN EN EL CÓDIGO ------ //
 	GLfloat FlipperD;
 	GLfloat FlipperI;
+	GLfloat FlipperISW;
 	GLfloat Palanca;
 	GLfloat MonedaPinball;
 	GLfloat ActivaPalanca;
+	GLfloat ActivaLanzamiento;
 	GLboolean apagaluzLinternaVerde;				//Variable de control de apagado de la luz Verde
 	GLboolean apagaluzLinternaRoja;				//Variable de control de apagado de la luz Roja
 	GLboolean apagaluzLinternaAzul;				//Variable de control de apagado de la luz Azul
 	int CamaraVis;
 	bool Canica1;
+	bool Canica2;
 
 	// ---------------------------------------------- //
 
@@ -103,5 +109,6 @@ private:
 	static void ManejaTeclado(GLFWwindow* window, int key, int code, int action, int mode);
 	static void ManejaMouse(GLFWwindow* window, double xPos, double yPos);
 	static void ManejaClicMouse(GLFWwindow* window, int button, int action, int mods);
+
 
 };
