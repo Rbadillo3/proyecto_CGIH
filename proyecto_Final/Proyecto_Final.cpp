@@ -1455,21 +1455,6 @@ int main()
 		GLfloat cameraYaw = -90.0f; // Por ejemplo, mirando directamente hacia el eje -Z
 		GLfloat cameraPitch = 0.0f; // Mantener el horizonte nivelado
 
-
-
-		if (mainWindow.getapagaLuzCocheT()) {
-			//RESET
-			movMoneda = 0.0f;
-			movMonedaOffset = 0.35f;
-			rotMoneda = 0.0f;
-			rotMonedaOffset = 5.0f;
-
-			movCanicaX = 0.0f;
-			movCanicaOffset = 2.75f;
-			rotCanica = 0.0f;
-			rotCanicaOffset = 5.0f;
-		}
-
 		// ---------MANEJO DE ILUMINACIÓN PARA CICLO DE DÍA Y DE NOCHE-----------
 
 		if (dia) {
