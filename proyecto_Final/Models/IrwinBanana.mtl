@@ -1,0 +1,45 @@
+newmtl IrwinBanana:Backpack
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd Body.png
+Ni 1.00
+Ks 0.00 0.00 0.00
+Ns 96.08
+newmtl IrwinBanana:Banana
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd Body.png
+Ni 1.00
+Ks 0.00 0.00 0.00
+Ns 96.08
+newmtl IrwinBanana:Glass
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd IrHead.png
+Ni 1.00
+Ks 0.00 0.00 0.00
+Ns 96.08
+newmtl IrwinBanana:Head
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd IrHead.png
+Ni 1.00
+Ks 0.00 0.00 0.00
+Ns 96.08
+newmtl IrwinBanana:Limbs
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd Body.png
+Ni 1.00
+Ks 0.00 0.00 0.00
+Ns 96.08
