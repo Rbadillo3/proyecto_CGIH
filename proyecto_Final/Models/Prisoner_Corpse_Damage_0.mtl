@@ -1,0 +1,49 @@
+# 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
+# File Created: 27.03.2021 14:39:05
+
+newmtl Prisoner_Corpse_Flesh_Mic
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5880 0.5880 0.5880
+	Kd 0.5880 0.5880 0.5880
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka Breakable_Prisoner_Diff.png
+	map_Kd Breakable_Prisoner_Diff.png
+	map_Ks Breakable_Prisoner_Spec.png
+	map_bump Breakable_Prisoner_Norm.png
+
+newmtl Prisoner_Corpse_Rock_Mic
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5880 0.5880 0.5880
+	Kd 0.5880 0.5880 0.5880
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka Breakable_Rock_B_Diff.png
+	map_Kd Breakable_Rock_B_Diff.png
+	map_Ks Breakable_Rock_B_Spec.png
+	map_bump Breakable_Rock_B_Norm.png
+
+newmtl Prisoner_Corpse_Cloth_Mat
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5880 0.5880 0.5880
+	Kd 0.5880 0.5880 0.5880
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka Prisoner_Cloth_Diff.png
+	map_Kd Prisoner_Cloth_Diff.png
+	map_bump Prisoner_Cloth_Norm.png
