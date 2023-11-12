@@ -22,6 +22,8 @@ public:
 
 	~Camera();
 
+	void SetPositionAndOrientation(glm::vec3 newPosition, GLfloat newYaw, GLfloat newPitch);
+
 private:
 	glm::vec3 position;
 	glm::vec3 front;
