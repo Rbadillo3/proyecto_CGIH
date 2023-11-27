@@ -250,7 +250,11 @@ void CreateScore() {
 
 
 //====	Kirby
-Model Kirby;
+Model CuerpoK;
+Model PieIZK;
+Model PieDEK;
+Model BraIZK;
+Model BraDEK;
 Model Apple;
 Model Whispy;
 
@@ -298,6 +302,7 @@ DirectionalLight mainLight;
 //para declarar varias luces de tipo pointlight
 PointLight pointLights[MAX_POINT_LIGHTS];
 SpotLight spotLights[MAX_SPOT_LIGHTS];
+SpotLight spotLights2[MAX_SPOT_LIGHTS];		//Nueva variable de spotlights
 
 // Vertex Shader
 static const char* vShader = "shaders/shader_light.vert";
@@ -544,7 +549,7 @@ int main()
 		glm::vec3(0.0f, 1.0f, 0.0f),
 		-90.0f,
 		0.0f,
-		0.3f,
+		0.2f,
 		0.5f);
 
 	Camera staticCamera(
@@ -557,11 +562,11 @@ int main()
 	);
 
 	Camera avatarCamera(
-		glm::vec3(0.0f, 100.0f, 590.0f),
+		glm::vec3(0.0f, 118.0f, 560.0f),
 		glm::vec3(0.0f, 1.0f, 0.0f),
 		90.0f,
 		15.0f,
-		0.3f,
+		0.2f,
 		0.5f                           // La velocidad de giro tampoco es relevante para la cámara estática
 	);
 
@@ -634,20 +639,34 @@ int main()
 	Chopper = Model();
 	Chopper.LoadModel("Models/SWRChopper.obj");
 	Cuerpo = Model();
-	Cuerpo.LoadModel("Models/Cuerpo.obj");
+	Cuerpo.LoadModel("Models/CuerpoChopper.obj");
 	Rueda = Model();
 	Rueda.LoadModel("Models/Rueda.obj");
 	Cabeza = Model();
-	Cabeza.LoadModel("Models/Cabeza.obj");
+	Cabeza.LoadModel("Models/CabezaC.obj");
 	Brazo_Izq = Model();
-	Brazo_Izq.LoadModel("Models/BrazoIzquierdo.obj");
+	Brazo_Izq.LoadModel("Models/BrazoIzquierdoChopper.obj");
 	Brazo_Der = Model();
-	Brazo_Der.LoadModel("Models/BrazoDerecho.obj");
+	Brazo_Der.LoadModel("Models/BrazoDerechoChopper.obj");
 
 	// ----------- Elementos Kirby -------------
 
-	Kirby = Model();
-	Kirby.LoadModel("Models/kirby.obj");
+	//Cuerpo Kirby
+	CuerpoK = Model();
+	CuerpoK.LoadModel("Models/Cuerpo.obj");
+
+	//Pies Kirby
+	PieIZK = Model();
+	PieIZK.LoadModel("Models/PieIzquierdo.obj");
+	PieDEK = Model();
+	PieDEK.LoadModel("Models/PieDerecho.obj");
+
+	//Brazos Kirby
+	BraIZK = Model();
+	BraIZK.LoadModel("Models/BrazoIzquierdo.obj");
+	BraDEK = Model();
+	BraDEK.LoadModel("Models/BrazoDerecho.obj");
+
 	Apple = Model();
 	Apple.LoadModel("Models/Apple.obj");
 	Whispy = Model();
@@ -705,7 +724,7 @@ int main()
 		ISound* sound = soundEngine->play2D(mp3FilePath, true, false, true);
 		//ISound* sound3dimens = soundEngine->play3D("Models/The Clone Wars_ ARC Trooper Theme _ EPIC VERSION.wav", vec3df(0, 0, 0), true, false, true);
 		if (sound) {
-			sound->setVolume(0.4f);
+			sound->setVolume(0.0f);
 		}
 
 		//if (sound3dimens) {
@@ -766,16 +785,8 @@ int main()
 
 	// =============	Declaración de la primera luz puntual	=======================
 
-
+	//Luz de los FLIPPERS DE INFIERNO COLOR ROJO
 	pointLights[0] = PointLight(
-		1.0f, 1.0f, 1.0f,   // RGB
-		40.0f, 80.0f,       // aIntensity - dIntensity
-		0.0f, 60.0f, 0.0f,   // La posición central del tablero
-		1.0f / 100.0f, 1.0f / 200.0f, 1.0f / 550.0f // Coeficientes de atenuación (Con, Lineal y Exponencial)
-	);
-	pointLightCount++;
-
-	pointLights[1] = PointLight(
 		1.0f, 0.0f, 0.0f,   // RGB
 		20.0f, 50.0f,       // aIntensity - dIntensity
 		0.0f, 55.0f, 420.0f,   // La posición central del tablero
@@ -783,25 +794,29 @@ int main()
 	);
 	pointLightCount++;
 
-	pointLights[2] = PointLight(
-		0.0f, 0.0f, 1.0f,   // RGB
-		20.0f, 50.0f,       // aIntensity - dIntensity
-		0.0f, 220.0f, -335.0f,   // La posición central del tablero
-		1.0f / 100.0f, 1.0f / 100.0f, 1.0f / 50.0f // Coeficientes de atenuación (Con, Lineal y Exponencial)
-	);
-	pointLightCount++;
+	unsigned int spotLightCount = 0, spotLightCount2 = 0;
 
-
-
-	unsigned int spotLightCount = 0;
 	//linterna
-	spotLights[0] = SpotLight(1.0f, 1.0f, 1.0f,
-		0.0f, 2.0f,
-		0.0f, 0.0f, 0.0f,
+	spotLights[0] = SpotLight(
+		1.0f, 1.0f, 0.0f,
+		0.045f, 5.0f,
+		0.0f, 28.0f, 590.0f,
 		0.0f, -1.0f, 0.0f,
 		1.0f, 0.0f, 0.0f,
-		5.0f);
+		7.5f);
 	spotLightCount++;
+
+	//Ahora debo de definir la spotlight que ilumina el tablero así bien 
+	// Modificación para atenuar la luz al 75%
+	spotLights2[0] = SpotLight(
+		1.0f, 1.0f, 1.0f,      // Color
+		0.045f, 0.45f,         // Intensidades ambiental y difusa atenuadas al 75%
+		0.0f, 230.0f, 0.0f,		// Posición
+		0.05f, 5.0f, 0.0f,     // Dirección
+		0.0f, 0.0020f, 0.0f,      // Atenuación Con Lin Exp
+		180.0f                 // Ángulo del cono
+	);
+	spotLightCount2++;
 
 
 
@@ -974,12 +989,12 @@ int main()
 		if (dircam.x > 0) {
 			angulo_cam += (180 * toRadians);
 		}
-		glm::vec3 posAvatar = glm::vec3(-80.0f, 75.0f, 300.0f);
+		glm::vec3 posAvatar = glm::vec3(-80.0f, 200.0f, 300.0f);
 
 
-		posAvatar.x = poscam.x + 1;
-		posAvatar.z = poscam.z;
-		posAvatar.y = poscam.y - 20;
+		posAvatar.x = poscam.x;
+		posAvatar.z = poscam.z + 15;
+		posAvatar.y = poscam.y - 30;
 
 
 
@@ -1422,6 +1437,10 @@ int main()
 			saltoChopper1 += saltoOffset * deltaTime;
 		}
 
+		if (saltoChopper1 > 10.0f) {
+			chopper1 = false;
+		}
+
 		if (!chopper1 && saltoChopper1 > 0.0f) {
 			giroChopper += velGiroChopper * deltaTime;
 			saltoChopper1 -= saltoOffset * deltaTime;
@@ -1432,6 +1451,9 @@ int main()
 			saltoChopper += saltoOffset * deltaTime;
 		}
 
+		if (saltoChopper > 10.0f) {
+			chopper2 = false;
+		}
 		if (!chopper2 && saltoChopper > 0.0f) {
 			giroChopper2 += velGiroChopper * deltaTime;
 			saltoChopper -= saltoOffset * deltaTime;
@@ -1460,27 +1482,27 @@ int main()
 		if (dia) {
 			if (contadorDiaNoche <= 1.0f) {
 				contadorDiaNoche += deltaTime * 0.002f;
-				skybox = Skybox(skyboxFacesDia);
+				//skybox = Skybox(skyboxFacesDia);
 				skyboxDia = true;
 			}
 			else {
 				dia = false;
 				noche = true;
 				skyboxDia = false;
-				skybox = Skybox(skyboxFacesNoche);
+				//skybox = Skybox(skyboxFacesNoche);
 			}
 		}
 		if (noche) {
 			if (contadorDiaNoche >= 0.0f) {
 				contadorDiaNoche -= deltaTime * 0.002f;
-				skybox = Skybox(skyboxFacesNoche);
+				//skybox = Skybox(skyboxFacesNoche);
 				skyboxNoche = true;
 			}
 			else {
 				dia = true;
 				noche = false;
 				skyboxNoche = false;
-				skybox = Skybox(skyboxFacesDia);
+				//skybox = Skybox(skyboxFacesDia);
 			}
 		}
 		mainLight.ChangeDiffuseAmbient(contadorDiaNoche, 0.3);
@@ -1519,12 +1541,21 @@ int main()
 		//sirve para que en tiempo de ejecución (dentro del while) se cambien propiedades de la luz
 		glm::vec3 lowerLight = camera->getCameraPosition();
 		lowerLight.y -= 0.3f;
-		spotLights[0].SetFlash(lowerLight, camera->getCameraDirection());
+		//spotLights[0].SetFlash(lowerLight, camera->getCameraDirection());
 
 		//información al shader de fuentes de iluminación
 		shaderList[0].SetDirectionalLight(&mainLight);
 		shaderList[0].SetPointLights(pointLights, pointLightCount);
 		shaderList[0].SetSpotLights(spotLights, spotLightCount);
+		shaderList[0].SetSpotLights(spotLights2, spotLightCount2);
+
+		// ============		VECTORES DE LUCES		!!!	 ========================================
+
+		//Definición de variable asociada a la posición de la luz para que esta basada en el movimiento del helicoptero se mueva
+		glm::vec3 posvecluzKirby = posAvatar; //La posición del vector estara en función de la posición del helicoptero
+		spotLights[0].SetFlash(posvecluzKirby, glm::vec3(0.0f, -1.0f, 0.0f));
+
+
 
 
 		//-------Para Keyframes
@@ -1539,10 +1570,11 @@ int main()
 		glm::mat4 modelauxCuerpoPinball(1.0);
 		glm::mat4 modelauxFlipper(1.0);
 		glm::mat4 modelauxKirbyC(1.0);
+		glm::mat4 modelauxCuerpoKirby(1.0);
+
 		glm::mat4 modelauxCuerpoChopper(1.0);
 
 		glm::vec2 toffset = glm::vec2(0.0f, 0.0f);
-
 
 		glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
 
@@ -1740,18 +1772,64 @@ int main()
 
 		// --------- OBJETOS DE KIRBY -----------
 
-		//Kirby
-		model = glm::mat4(1.0);
+		//Cuerpo Kirby
+		model = modelauxCuerpoPinball;
 		model = glm::translate(model, posAvatar);
+		modelauxCuerpoKirby = model;
 		modelauxKirbyC = model;
-		model = glm::scale(model, glm::vec3(65.0f, 65.0f, 65.0f));
+		model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
+		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Kirby.RenderModel();
+		CuerpoK.RenderModel();
+
+		//Brazo Izquierdo Kirby
+		model = modelauxCuerpoKirby;
+		model = glm::translate(model, glm::vec3(8.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
+		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(mainWindow.getBraIKirby()), glm::vec3(-1.0f, 0.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		BraIZK.RenderModel();
+
+		//Brazo Derecho Kirby
+		model = modelauxCuerpoKirby;
+		model = glm::translate(model, glm::vec3(-8.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
+		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(mainWindow.getBraDKirby()), glm::vec3(-1.0f, 0.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		BraDEK.RenderModel();
+
+		//Pie Izquierdo Kirby
+		model = modelauxCuerpoKirby;
+		model = glm::translate(model, glm::vec3(9.0f, -4.5f, 3.0f));
+		model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
+		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(mainWindow.getPieIKirby()), glm::vec3(-1.0f, 0.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		PieIZK.RenderModel();
+
+		//Pie Derecho Kirby
+		model = modelauxCuerpoKirby;
+		model = glm::translate(model, glm::vec3(-9.0f, -4.5f, 3.0f));
+		model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
+		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(mainWindow.getPieDKirby()), glm::vec3(-1.0f, 0.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		PieDEK.RenderModel();
+
+		//Kirby
+		//model = modelauxCuerpoPinball;
+		//model = glm::translate(model, posAvatar); 
+		//modelauxKirbyC = model; 
+		//model = glm::scale(model, glm::vec3(65.0f, 65.0f, 65.0f)); 
+		//glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model)); 
+		//CuerpoK.RenderModel(); 
 
 		//Estrella
 		model = modelauxKirbyC;
-		model = glm::translate(model, glm::vec3(0.0f, 33.25f, 0.0f));
-		model = glm::scale(model, glm::vec3(35.0f, 35.0f, 35.0f));
+		model = glm::translate(model, glm::vec3(0.0f, 28.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(40.0f, 40.0f, 40.0f));
 		model = glm::rotate(model, 90 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, 90 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
@@ -1806,28 +1884,17 @@ int main()
 
 		// --------- OBJETOS DE PINBALL -----------
 
-		//Para apagar la primera PointLight [Verde]
+		//Para apagar la luz del FOCO
 		if (mainWindow.getapagaLuzLinternaVerde())
 		{
-			shaderList[0].SetPointLights(&pointLights[0], 1);
+			shaderList[0].SetSpotLights(&spotLights[0], 1);
 		}
 
-		//Para apagar la segunda PointLight [Roja]
-		if (mainWindow.getapagaLuzLinternaRoja())
-		{
-			shaderList[0].SetPointLights(&pointLights[1], 1);
-		}
-
-		//Para apagar la segunda PointLight [Azul]
-		if (mainWindow.getapagaLuzLinternaAzul())
-		{
-			shaderList[0].SetPointLights(&pointLights[2], 1);
-		}
 
 		// Para apagar la linterna 
 		if (mainWindow.getapagaLuz())
 		{
-			shaderList[0].SetSpotLights(&spotLights[1], 1);
+			shaderList[0].SetSpotLights(spotLights2, spotLightCount2 - 1);
 		}
 
 
