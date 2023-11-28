@@ -9,7 +9,6 @@ Integrantes:
 -Rivas Arteaga Enrique Alan
 */
 
-
 //para cargar imagen
 #define STB_IMAGE_IMPLEMENTATION
 
@@ -47,8 +46,8 @@ const float toRadians = 3.14159265f / 180.0f;
 
 //Para implementación de audio
 
-#include <irrKlang.h>
-using namespace irrklang;
+//#include <irrKlang.h>
+//using namespace irrklang;
 
 // =========				Variables de control para animación				===============
 
@@ -56,8 +55,7 @@ using namespace irrklang;
 float contadorDiaNoche = 0.0f;
 bool dia = true;
 bool noche = false;
-bool skyboxDia = true;
-bool skyboxNoche = false;
+
 
 //====	Moneda
 float movMoneda;
@@ -89,12 +87,9 @@ float CanX;
 float velCanX;
 float CanZ;
 float velCanZ;
-
 bool Canica1Anim;
-
 float movOffset;
 bool avanza;
-
 
 //Animacion Canica2
 bool CanicaAnim2;
@@ -102,9 +97,7 @@ int Canica2Edo;
 float Can2X;
 float Can2Z;
 int rebote;
-
 bool Canica2Anim;
-
 float newVel;
 
 //Variables de control Animación Canica3 (Keyframes)
@@ -116,16 +109,25 @@ bool finAnim1;
 bool finAnim2;
 bool finAnim3;
 
-//Variables enfocadas en la animación de Textura DE PUNTAJE
-float decU, decV;
-float numU, numV;
-int num, num2;
-
-//Para las decenas
+//Variables enfocadas en la animación de Texturas [MOVIMIENTO DE TEXTURAS]
+int valorUnidades;
+int valorDecenas;
+float cambianum;
+float movTextura;
+float velTextura;
 float valorCoordUDecenas;
 float valorCoordVDecenas;
 float coordU;
 float coordV;
+bool Iteracion;
+bool Cambio;
+
+float toffsetflechau = 0.0f;
+float toffsetflechav = 0.0f;
+float toffsetnumerou = 0.0f;
+float toffsetnumerov = 0.0f;
+float toffsetnumerocambiau = 0.0;
+float angulovaria = 0.0f;
 
 //Variables para animación de Objeto Jerárquico
 bool chopper1;
@@ -137,8 +139,9 @@ float giroChopper2;
 float velGiroChopper;
 float saltoOffset;
 
+
 Window mainWindow;
-std::vector<Mesh*> meshList;
+std::vector<Mesh*> meshList, meshList2;
 std::vector<Shader> shaderList;
 
 Camera camera;
@@ -148,13 +151,15 @@ Texture dirtTexture;
 Texture plainTexture;
 Texture pisoTexture;
 Texture AgaveTexture;
-Texture white;
+Texture FlechaTexture;
 Texture NumerosTexture;
+Texture Numero1Texture;
+Texture Numero2Texture;
 Texture estrellaTexture;
 Texture rocosaTexture;
+Texture white;
 
 // =========				Variables de MODELOS				===============
-
 
 //====	Star Wars
 Model CañoneraLAAT;
@@ -167,6 +172,337 @@ Model Cabeza;
 Model Brazo_Izq;
 Model Brazo_Der;
 
+//====	Kirby
+Model CuerpoK;
+Model PieIZK;
+Model PieDEK;
+Model BraIZK;
+Model BraDEK;
+Model Apple;
+Model Whispy;
+
+//====	Billy y Mandy
+Model Billy;
+Model Grim;
+Model Mandy;
+Model Irwing;
+Model Prisionero;
+Model Ojo;
+Model Mano;
+Model Roca;
+
+//====	Elementos del PINBALL
+Model Pinball;
+Model Coin;
+Model Canica;
+Model Tapa;
+Model FlipperI;
+Model FlipperD;
+Model Base_Palanca;
+Model Palanca;
+Model Resorte;
+Model FlipperSable;
+Model Pantalla;
+
+
+Model Blackhawk_M;
+
+Skybox skyboxDia;
+Skybox skyboxNoche;
+
+
+//materiales
+Material Material_brillante;
+Material Material_opaco;
+
+
+//Sphere cabeza = Sphere(0.5, 20, 20);
+GLfloat deltaTime = 0.0f;
+GLfloat lastTime = 0.0f;
+static double limitFPS = 1.0 / 60.0;
+
+// luz direccional
+DirectionalLight mainLight;
+//para declarar varias luces de tipo pointlight
+PointLight pointLights[MAX_POINT_LIGHTS];
+SpotLight spotLights[MAX_SPOT_LIGHTS];
+SpotLight spotLights2[MAX_SPOT_LIGHTS];
+
+// Vertex Shader
+static const char* vShader = "shaders/shader_light.vert";
+
+// Fragment Shader
+static const char* fShader = "shaders/shader_light.frag";
+
+
+//cálculo del promedio de las normales para sombreado de Phong
+void calcAverageNormals(unsigned int* indices, unsigned int indiceCount, GLfloat* vertices, unsigned int verticeCount,
+	unsigned int vLength, unsigned int normalOffset)
+{
+	for (size_t i = 0; i < indiceCount; i += 3)
+	{
+		unsigned int in0 = indices[i] * vLength;
+		unsigned int in1 = indices[i + 1] * vLength;
+		unsigned int in2 = indices[i + 2] * vLength;
+		glm::vec3 v1(vertices[in1] - vertices[in0], vertices[in1 + 1] - vertices[in0 + 1], vertices[in1 + 2] - vertices[in0 + 2]);
+		glm::vec3 v2(vertices[in2] - vertices[in0], vertices[in2 + 1] - vertices[in0 + 1], vertices[in2 + 2] - vertices[in0 + 2]);
+		glm::vec3 normal = glm::cross(v1, v2);
+		normal = glm::normalize(normal);
+
+		in0 += normalOffset; in1 += normalOffset; in2 += normalOffset;
+		vertices[in0] += normal.x; vertices[in0 + 1] += normal.y; vertices[in0 + 2] += normal.z;
+		vertices[in1] += normal.x; vertices[in1 + 1] += normal.y; vertices[in1 + 2] += normal.z;
+		vertices[in2] += normal.x; vertices[in2 + 1] += normal.y; vertices[in2 + 2] += normal.z;
+	}
+
+	for (size_t i = 0; i < verticeCount / vLength; i++)
+	{
+		unsigned int nOffset = i * vLength + normalOffset;
+		glm::vec3 vec(vertices[nOffset], vertices[nOffset + 1], vertices[nOffset + 2]);
+		vec = glm::normalize(vec);
+		vertices[nOffset] = vec.x; vertices[nOffset + 1] = vec.y; vertices[nOffset + 2] = vec.z;
+	}
+}
+
+
+void CreateObjects()
+{
+	unsigned int indices[] = {
+		0, 3, 1,
+		1, 3, 2,
+		2, 3, 0,
+		0, 1, 2
+	};
+
+	GLfloat vertices[] = {
+		//	x      y      z			u	  v			nx	  ny    nz
+			-1.0f, -1.0f, -0.6f,	0.0f, 0.0f,		0.0f, 0.0f, 0.0f,
+			0.0f, -1.0f, 1.0f,		0.5f, 0.0f,		0.0f, 0.0f, 0.0f,
+			1.0f, -1.0f, -0.6f,		1.0f, 0.0f,		0.0f, 0.0f, 0.0f,
+			0.0f, 1.0f, 0.0f,		0.5f, 1.0f,		0.0f, 0.0f, 0.0f
+	};
+
+	unsigned int floorIndices[] = {
+		0, 2, 1,
+		1, 2, 3
+	};
+
+	GLfloat floorVertices[] = {
+		-10.0f, 0.0f, -10.0f,	0.0f, 0.0f,		0.0f, -1.0f, 0.0f,
+		10.0f, 0.0f, -10.0f,	10.0f, 0.0f,	0.0f, -1.0f, 0.0f,
+		-10.0f, 0.0f, 10.0f,	0.0f, 10.0f,	0.0f, -1.0f, 0.0f,
+		10.0f, 0.0f, 10.0f,		10.0f, 10.0f,	0.0f, -1.0f, 0.0f
+	};
+	unsigned int vegetacionIndices[] = {
+	   0, 1, 2,
+	   0, 2, 3,
+	   4,5,6,
+	   4,6,7
+	};
+
+	GLfloat vegetacionVertices[] = {
+		-0.5f, -0.5f, 0.0f,		0.0f, 0.0f,		0.0f, 0.0f, 0.0f,
+		0.5f, -0.5f, 0.0f,		1.0f, 0.0f,		0.0f, 0.0f, 0.0f,
+		0.5f, 0.5f, 0.0f,		1.0f, 1.0f,		0.0f, 0.0f, 0.0f,
+		-0.5f, 0.5f, 0.0f,		0.0f, 1.0f,		0.0f, 0.0f, 0.0f,
+
+		0.0f, -0.5f, -0.5f,		0.0f, 0.0f,		0.0f, 0.0f, 0.0f,
+		0.0f, -0.5f, 0.5f,		1.0f, 0.0f,		0.0f, 0.0f, 0.0f,
+		0.0f, 0.5f, 0.5f,		1.0f, 1.0f,		0.0f, 0.0f, 0.0f,
+		0.0f, 0.5f, -0.5f,		0.0f, 1.0f,		0.0f, 0.0f, 0.0f,
+
+
+	};
+
+
+	unsigned int flechaIndices[] = {
+	   0, 1, 2,
+	   0, 2, 3,
+	};
+
+	GLfloat flechaVertices[] = {
+		-0.5f, 0.0f, 0.5f,		0.0f, 0.0f,		0.0f, -1.0f, 0.0f,
+		0.5f, 0.0f, 0.5f,		1.0f, 0.0f,		0.0f, -1.0f, 0.0f,
+		0.5f, 0.0f, -0.5f,		1.0f, 1.0f,		0.0f, -1.0f, 0.0f,
+		-0.5f, 0.0f, -0.5f,		0.0f, 1.0f,		0.0f, -1.0f, 0.0f,
+
+	};
+
+	unsigned int scoreIndices[] = {
+	   0, 1, 2,
+	   0, 2, 3,
+	};
+
+	GLfloat scoreVertices[] = {
+		-0.5f, 0.0f, 0.5f,		0.0f, 0.0f,		0.0f, -1.0f, 0.0f,
+		0.5f, 0.0f, 0.5f,		1.0f, 0.0f,		0.0f, -1.0f, 0.0f,
+		0.5f, 0.0f, -0.5f,		1.0f, 1.0f,		0.0f, -1.0f, 0.0f,
+		-0.5f, 0.0f, -0.5f,		0.0f, 1.0f,		0.0f, -1.0f, 0.0f,
+
+	};
+
+	unsigned int numeroIndices[] = {
+	   0, 1, 2,
+	   0, 2, 3,
+	};
+
+	GLfloat numeroVertices[] = {
+		-0.5f, 0.0f, 0.5f,		0.0f, 0.67f,		0.0f, -1.0f, 0.0f,
+		0.5f, 0.0f, 0.5f,		0.25f, 0.67f,		0.0f, -1.0f, 0.0f,
+		0.5f, 0.0f, -0.5f,		0.25f, 1.0f,		0.0f, -1.0f, 0.0f,
+		-0.5f, 0.0f, -0.5f,		0.0f, 1.0f,		0.0f, -1.0f, 0.0f,
+
+	};
+
+	Mesh* obj1 = new Mesh();
+	obj1->CreateMesh(vertices, indices, 32, 12);
+	meshList.push_back(obj1);
+
+	Mesh* obj2 = new Mesh();
+	obj2->CreateMesh(vertices, indices, 32, 12);
+	meshList.push_back(obj2);
+
+	Mesh* obj3 = new Mesh();
+	obj3->CreateMesh(floorVertices, floorIndices, 32, 6);
+	meshList.push_back(obj3);
+
+	Mesh* obj4 = new Mesh();
+	obj4->CreateMesh(vegetacionVertices, vegetacionIndices, 64, 12);
+	meshList.push_back(obj4);
+
+	Mesh* obj5 = new Mesh();
+	obj5->CreateMesh(flechaVertices, flechaIndices, 32, 6);
+	meshList.push_back(obj5);
+
+	Mesh* obj6 = new Mesh();
+	obj6->CreateMesh(scoreVertices, scoreIndices, 32, 6);
+	meshList.push_back(obj6);
+
+	Mesh* obj7 = new Mesh();
+	obj7->CreateMesh(numeroVertices, numeroIndices, 32, 6);
+	meshList.push_back(obj7);
+
+}
+
+void CrearPiramideTriangular()
+{
+	unsigned int indices_piramide_triangular[] = {
+			0,1,2,
+			1,3,2,
+			3,0,2,
+			1,0,3
+
+	};
+	GLfloat vertices_piramide_triangular[] = {
+		-0.5f, -0.5f,0.0f,	//0
+		0.5f,-0.5f,0.0f,	//1
+		0.0f,0.5f, -0.25f,	//2
+		0.0f,-0.5f,-0.5f,	//3
+
+	};
+	Mesh* obj2 = new Mesh();
+	obj2->CreateMesh(vertices_piramide_triangular, indices_piramide_triangular, 12, 12);
+	meshList2.push_back(obj2);
+
+}
+
+
+void CreateShaders()
+{
+	Shader* shader1 = new Shader();
+	shader1->CreateFromFiles(vShader, fShader);
+	shaderList.push_back(*shader1);
+}
+
+
+////////////////////// FUNCIONES Y VALORES INICIALES DE KEYFRAMES //////////////////////
+//variables para keyframes
+float reproduciranimacion, habilitaranimacion, reinicioFrame, ciclo, ciclo2, contador = 0.0f;
+
+//función para teclado de keyframes 
+void inputKeyframes(bool* keys);
+
+bool animacion = false;
+
+
+
+//NEW// Keyframes
+float posXavion = 2.0, posYavion = 5.0, posZavion = -3.0;
+float	movAvion_x = 0.0f, movAvion_y = 0.0f;
+float giroAvion = 0;
+
+#define MAX_FRAMES 100
+int i_max_steps = 20;
+int i_curr_steps = 18;
+typedef struct _frame
+{
+	//Variables para GUARDAR Key Frames
+	float movAvion_x;		//Variable para PosicionX
+	float movAvion_y;		//Variable para PosicionY
+	float movAvion_xInc;		//Variable para IncrementoX
+	float movAvion_yInc;		//Variable para IncrementoY
+	float giroAvion;
+	float giroAvionInc;
+}FRAME;
+
+FRAME KeyFrame[MAX_FRAMES];
+int FrameIndex = 18;			//introducir datos
+bool play = false;
+int playIndex = 0;
+
+void resetElements(void) //Tecla 0
+{
+
+	movAvion_x = KeyFrame[0].movAvion_x;
+	movAvion_y = KeyFrame[0].movAvion_y;
+	giroAvion = KeyFrame[0].giroAvion;
+}
+
+void interpolation(void)
+{
+	KeyFrame[playIndex].movAvion_xInc = (KeyFrame[playIndex + 1].movAvion_x - KeyFrame[playIndex].movAvion_x) / i_max_steps;
+	KeyFrame[playIndex].movAvion_yInc = (KeyFrame[playIndex + 1].movAvion_y - KeyFrame[playIndex].movAvion_y) / i_max_steps;
+	KeyFrame[playIndex].giroAvionInc = (KeyFrame[playIndex + 1].giroAvion - KeyFrame[playIndex].giroAvion) / i_max_steps;
+
+}
+
+void animate(void)
+{
+	//Movimiento del objeto con barra espaciadora
+	if (play)
+	{
+		if (i_curr_steps >= i_max_steps) //fin de animación entre frames?
+		{
+			playIndex++;
+			//printf("playindex : %d\n", playIndex);
+			if (playIndex > FrameIndex - 2)	//Fin de toda la animación con último frame?
+			{
+				//printf("Frame index= %d\n", FrameIndex);
+				//printf("termino la animacion\n");
+				playIndex = 0;
+				play = false;
+			}
+			else //Interpolación del próximo cuadro
+			{
+
+				i_curr_steps = 0; //Resetea contador
+				//Interpolar
+				interpolation();
+			}
+		}
+		else
+		{
+			//Dibujar Animación
+			movAvion_x += KeyFrame[playIndex].movAvion_xInc;
+			movAvion_y += KeyFrame[playIndex].movAvion_yInc;
+			giroAvion += KeyFrame[playIndex].giroAvionInc;
+			i_curr_steps++;
+		}
+
+	}
+}
+
+///////////////* FIN KEYFRAMES*////////////////////////////
 
 void CreateStar() {
 	unsigned int indicesEstrella[] = {
@@ -203,7 +539,7 @@ void CreateStar() {
 
 	Mesh* obj1 = new Mesh();
 	obj1->CreateMesh(verticesEstrella, indicesEstrella, 96, 24);
-	meshList.push_back(obj1);
+	meshList2.push_back(obj1);
 }
 
 void CreatePiramide() {
@@ -229,319 +565,18 @@ void CreatePiramide() {
 	meshList.push_back(obj1);
 }
 
-void CreateScore() {
-	unsigned int scoreIndices[] = {
-	   0, 1, 2,
-	   0, 2, 3,
-	};
-
-	GLfloat scoreVertices[] = {
-		-0.5f, 0.0f, 0.5f,		0.0f, 0.0f,		0.0f, -1.0f, 0.0f,
-		0.5f, 0.0f, 0.5f,		1.0f, 0.0f,		0.0f, -1.0f, 0.0f,
-		0.5f, 0.0f, -0.5f,		1.0f, 1.0f,		0.0f, -1.0f, 0.0f,
-		-0.5f, 0.0f, -0.5f,		0.0f, 1.0f,		0.0f, -1.0f, 0.0f,
-
-	};
-	Mesh* obj6 = new Mesh();
-	obj6->CreateMesh(scoreVertices, scoreIndices, 32, 6);
-	meshList.push_back(obj6);
-}
-
-
-
-//====	Kirby
-Model CuerpoK;
-Model PieIZK;
-Model PieDEK;
-Model BraIZK;
-Model BraDEK;
-Model Apple;
-Model Whispy;
-
-//====	Billy y Mandy
-Model Billy;
-Model Grim;
-Model Mandy;
-Model Irwing;
-Model Prisionero;
-Model Ojo;
-Model Mano;
-Model Roca;
-Model Lava;
-
-//====	Elementos del PINBALL
-Model Pinball;
-Model Coin;
-Model Canica;
-Model Tapa;
-Model FlipperI;
-Model FlipperD;
-Model Base_Palanca;
-Model Palanca;
-Model Resorte;
-Model FlipperSable;
-Model Pantalla;
-
-
-
-
-Skybox skybox;
-
-//materiales
-Material Material_brillante;
-Material Material_opaco;
-
-
-//Sphere cabeza = Sphere(0.5, 20, 20);
-GLfloat deltaTime = 0.0f;
-GLfloat lastTime = 0.0f;
-static double limitFPS = 1.0 / 60.0;
-
-// luz direccional
-DirectionalLight mainLight;
-//para declarar varias luces de tipo pointlight
-PointLight pointLights[MAX_POINT_LIGHTS];
-SpotLight spotLights[MAX_SPOT_LIGHTS];
-SpotLight spotLights2[MAX_SPOT_LIGHTS];		//Nueva variable de spotlights
-
-// Vertex Shader
-static const char* vShader = "shaders/shader_light.vert";
-
-// Fragment Shader
-static const char* fShader = "shaders/shader_light.frag";
-
-
-//función de calculo de normales por promedio de vértices 
-void calcAverageNormals(unsigned int* indices, unsigned int indiceCount, GLfloat* vertices, unsigned int verticeCount,
-	unsigned int vLength, unsigned int normalOffset)
-{
-	for (size_t i = 0; i < indiceCount; i += 3)
-	{
-		unsigned int in0 = indices[i] * vLength;
-		unsigned int in1 = indices[i + 1] * vLength;
-		unsigned int in2 = indices[i + 2] * vLength;
-		glm::vec3 v1(vertices[in1] - vertices[in0], vertices[in1 + 1] - vertices[in0 + 1], vertices[in1 + 2] - vertices[in0 + 2]);
-		glm::vec3 v2(vertices[in2] - vertices[in0], vertices[in2 + 1] - vertices[in0 + 1], vertices[in2 + 2] - vertices[in0 + 2]);
-		glm::vec3 normal = glm::cross(v1, v2);
-		normal = glm::normalize(normal);
-
-		in0 += normalOffset; in1 += normalOffset; in2 += normalOffset;
-		vertices[in0] += normal.x; vertices[in0 + 1] += normal.y; vertices[in0 + 2] += normal.z;
-		vertices[in1] += normal.x; vertices[in1 + 1] += normal.y; vertices[in1 + 2] += normal.z;
-		vertices[in2] += normal.x; vertices[in2 + 1] += normal.y; vertices[in2 + 2] += normal.z;
-	}
-
-	for (size_t i = 0; i < verticeCount / vLength; i++)
-	{
-		unsigned int nOffset = i * vLength + normalOffset;
-		glm::vec3 vec(vertices[nOffset], vertices[nOffset + 1], vertices[nOffset + 2]);
-		vec = glm::normalize(vec);
-		vertices[nOffset] = vec.x; vertices[nOffset + 1] = vec.y; vertices[nOffset + 2] = vec.z;
-	}
-}
-
-void CreateObjects()
-{
-	unsigned int indices[] = {
-		0, 3, 1,
-		1, 3, 2,
-		2, 3, 0,
-		0, 1, 2
-	};
-
-	GLfloat vertices[] = {
-		//	x      y      z			u	  v			nx	  ny    nz
-			-1.0f, -1.0f, -0.6f,	0.0f, 0.0f,		0.0f, 0.0f, 0.0f,
-			0.0f, -1.0f, 1.0f,		0.5f, 0.0f,		0.0f, 0.0f, 0.0f,
-			1.0f, -1.0f, -0.6f,		1.0f, 0.0f,		0.0f, 0.0f, 0.0f,
-			0.0f, 1.0f, 0.0f,		0.5f, 1.0f,		0.0f, 0.0f, 0.0f
-	};
-
-	unsigned int floorIndices[] = {
-		0, 2, 1,
-		1, 2, 3
-	};
-
-	GLfloat floorVertices[] = {
-		-10.0f, 0.0f, -10.0f,	0.0f, 0.0f,		0.0f, -1.0f, 0.0f,
-		10.0f, 0.0f, -10.0f,	10.0f, 0.0f,	0.0f, -1.0f, 0.0f,
-		-10.0f, 0.0f, 10.0f,	0.0f, 10.0f,	0.0f, -1.0f, 0.0f,
-		10.0f, 0.0f, 10.0f,		10.0f, 10.0f,	0.0f, -1.0f, 0.0f
-	};
-
-	unsigned int vegetacionIndices[] = {
-	   0, 1, 2,
-	   0, 2, 3,
-	   4,5,6,
-	   4,6,7
-	};
-
-	GLfloat vegetacionVertices[] = {
-		-0.5f, -0.5f, 0.0f,		0.0f, 0.0f,		0.0f, 0.0f, 0.0f,
-		0.5f, -0.5f, 0.0f,		1.0f, 0.0f,		0.0f, 0.0f, 0.0f,
-		0.5f, 0.5f, 0.0f,		1.0f, 1.0f,		0.0f, 0.0f, 0.0f,
-		-0.5f, 0.5f, 0.0f,		0.0f, 1.0f,		0.0f, 0.0f, 0.0f,
-
-		0.0f, -0.5f, -0.5f,		0.0f, 0.0f,		0.0f, 0.0f, 0.0f,
-		0.0f, -0.5f, 0.5f,		1.0f, 0.0f,		0.0f, 0.0f, 0.0f,
-		0.0f, 0.5f, 0.5f,		1.0f, 1.0f,		0.0f, 0.0f, 0.0f,
-		0.0f, 0.5f, -0.5f,		0.0f, 1.0f,		0.0f, 0.0f, 0.0f,
-
-
-	};
-
-	Mesh* obj1 = new Mesh();
-	obj1->CreateMesh(vertices, indices, 32, 12);
-	meshList.push_back(obj1);
-
-	Mesh* obj2 = new Mesh();
-	obj2->CreateMesh(vertices, indices, 32, 12);
-	meshList.push_back(obj2);
-
-	Mesh* obj3 = new Mesh();
-	obj3->CreateMesh(floorVertices, floorIndices, 32, 6);
-	meshList.push_back(obj3);
-
-	Mesh* obj4 = new Mesh();
-	obj4->CreateMesh(vegetacionVertices, vegetacionIndices, 64, 12);
-	meshList.push_back(obj4);
-
-	calcAverageNormals(indices, 12, vertices, 32, 8, 5);
-
-	calcAverageNormals(vegetacionIndices, 12, vegetacionVertices, 64, 8, 5);
-
-}
-
-// Pirámide triangular regular
-void CrearPiramideTriangular()
-{
-	unsigned int indices_piramide_triangular[] = {
-			0,1,2,
-			1,3,2,
-			3,0,2,
-			1,0,3
-
-	};
-	GLfloat vertices_piramide_triangular[] = {
-		-0.5f, -0.5f,0.0f,	//0
-		0.5f,-0.5f,0.0f,	//1
-		0.0f,0.5f, -0.25f,	//2
-		0.0f,-0.5f,-0.5f,	//3
-
-	};
-	Mesh* obj1 = new Mesh();
-	obj1->CreateMesh(vertices_piramide_triangular, indices_piramide_triangular, 12, 12);
-	meshList.push_back(obj1);
-
-}
-
-void CreateShaders()
-{
-	Shader* shader1 = new Shader();
-	shader1->CreateFromFiles(vShader, fShader);
-	shaderList.push_back(*shader1);
-}
-
-
-////////////////////// FUNCIONES Y VALORES INICIALES DE KEYFRAMES //////////////////////
-
-//variables para keyframes
-float reproduciranimacion, habilitaranimacion, reinicioFrame, ciclo, ciclo2, contador = 0.0f;
-
-//función para teclado de keyframes 
-void inputKeyframes(bool* keys);
-
-bool animacion = false;
-
-
-
-//NEW// Keyframes
-float posXavion = 2.0, posYavion = 5.0, posZavion = -3.0;
-float	movAvion_x = 0.0f, movAvion_y = 0.0f;
-
-#define MAX_FRAMES 100
-int i_max_steps = 90;
-int i_curr_steps = 18;		//Cantidad de frames
-typedef struct _frame
-{
-	//Variables para GUARDAR Key Frames
-	float movAvion_x;		//Variable para PosicionX
-	float movAvion_y;		//Variable para PosicionY
-	float movAvion_xInc;		//Variable para IncrementoX
-	float movAvion_yInc;		//Variable para IncrementoY
-}FRAME;
-
-FRAME KeyFrame[MAX_FRAMES];
-int FrameIndex = 18;			//introducir datos
-bool play = false;
-int playIndex = 0;
-
-
-void resetElements(void) //Tecla 9
-{
-
-	movAvion_x = KeyFrame[0].movAvion_x;
-	movAvion_y = KeyFrame[0].movAvion_y;
-}
-
-void interpolation(void)
-{
-	KeyFrame[playIndex].movAvion_xInc = (KeyFrame[playIndex + 1].movAvion_x - KeyFrame[playIndex].movAvion_x) / i_max_steps;
-	KeyFrame[playIndex].movAvion_yInc = (KeyFrame[playIndex + 1].movAvion_y - KeyFrame[playIndex].movAvion_y) / i_max_steps;
-
-}
-
-
-void animate(void)
-{
-	//Movimiento del objeto con barra espaciadora
-	if (play)
-	{
-		if (i_curr_steps >= i_max_steps) //fin de animación entre frames?
-		{
-			playIndex++;
-			//printf("playindex : %d\n", playIndex);
-			if (playIndex > FrameIndex - 2)	//Fin de toda la animación con último frame?
-			{
-				//printf("Frame index= %d\n", FrameIndex);
-				//printf("termino la animacion\n");
-				playIndex = 0;
-				play = false;
-			}
-			else //Interpolación del próximo cuadro
-			{
-
-				i_curr_steps = 0; //Resetea contador
-				//Interpolar
-				interpolation();
-			}
-		}
-		else
-		{
-			//Dibujar Animación
-			movAvion_x += KeyFrame[playIndex].movAvion_xInc;
-			movAvion_y += KeyFrame[playIndex].movAvion_yInc;
-			i_curr_steps++;
-		}
-
-	}
-}
-
-////////////////////// *** FIN KEYFRAMES *** //////////////////////
-
 
 
 int main()
 {
-	mainWindow = Window(1920, 1080); // 1280, 1024 or 1024, 768
+	mainWindow = Window(1366, 768); // 1280, 1024 or 1024, 768
 	mainWindow.Initialise();
+
+	CreateShaders();
+	CreateObjects();
 
 	CreateStar();
 	CreatePiramide();
-	CreateScore();
-	CreateObjects();
-	CreateShaders();
-
 
 	// ================ CÁMARAS ================================
 	Camera dynamicCamera(
@@ -582,14 +617,20 @@ int main()
 	pisoTexture.LoadTextureA();
 	AgaveTexture = Texture("Textures/Agave.tga");
 	AgaveTexture.LoadTextureA();
+	FlechaTexture = Texture("Textures/flechas.tga");
+	FlechaTexture.LoadTextureA();
+	NumerosTexture = Texture("Textures/numerosbase.tga");
+	NumerosTexture.LoadTextureA();
+	Numero1Texture = Texture("Textures/numero1.tga");
+	Numero1Texture.LoadTextureA();
+	Numero2Texture = Texture("Textures/numero2.tga");
+	Numero2Texture.LoadTextureA();
 
 	estrellaTexture = Texture("Textures/estrella.tga");
 	estrellaTexture.LoadTextureA();
 	rocosaTexture = Texture("Textures/rocosa.tga");
 	rocosaTexture.LoadTextureA();
 
-	NumerosTexture = Texture("Textures/numerosbase.tga");
-	NumerosTexture.LoadTextureA();
 
 	//	Se cargan todos los objetos 
 
@@ -697,59 +738,11 @@ int main()
 	Roca = Model();
 	Roca.LoadModel("Models/rtm_rock_space.obj");
 
-	Lava = Model();
-	Lava.LoadModel("Models/lava.obj");
 
 
-	ISoundEngine* soundEngine = nullptr;
+	//AUDIO
 
-	if (avanzaMoneda = true) {
-		//printf("Sonido");
-		// Crear el motor de sonido
-		soundEngine = createIrrKlangDevice();
-
-		if (!soundEngine) {
-			// Manejo de error si no se pudo crear el motor de sonido
-			return 1;
-		}
-	}
-	// Ruta al archivo MP3 que deseas reproducir
-	const char* mp3FilePath = "Models/Bowser-Peaches-_Official-Music-Video_-_-The-Super-Mario-Bros.-Movie.wav";
-
-	// Reproduce el archivo WAV
-	///*
-
-	if (avanzaMoneda = true) {
-		// Cargar un sonido
-		ISound* sound = soundEngine->play2D(mp3FilePath, true, false, true);
-		//ISound* sound3dimens = soundEngine->play3D("Models/The Clone Wars_ ARC Trooper Theme _ EPIC VERSION.wav", vec3df(0, 0, 0), true, false, true);
-		if (sound) {
-			sound->setVolume(0.0f);
-		}
-
-		//if (sound3dimens) {
-		//	sound3dimens->setVolume(1.0f);
-		//	sound->setIsPaused(false);
-		//	
-		//	sound3dimens->setPosition(vec3df(0.0f, 0.0f, 0.0f)); // establecer la posición en el espacio 3D
-		//	sound->setMaxDistance(230.0f);
-		//	float ListenerX = 0.0f;  // Coordenada X del oyente
-		//	float ListenerY = 0.0f;  // Coordenada Y del oyente
-		//	float ListenerZ = 0.0f;  // Coordenada Z del oyente
-		//}
-
-
-
-	}
-
-
-	//*/
-
-	// Espera
-
-
-
-
+	//SKYBOX
 	std::vector<std::string> skyboxFacesDia;
 	skyboxFacesDia.push_back("Textures/Skybox/starWars_rt.tga"); //Right
 	skyboxFacesDia.push_back("Textures/Skybox/starWars_lf.tga"); //Left
@@ -766,15 +759,16 @@ int main()
 	skyboxFacesNoche.push_back("Textures/Skybox/starWarsNight_bk.tga");
 	skyboxFacesNoche.push_back("Textures/Skybox/starWarsNight_ft.tga");
 
+	Skybox* currentSkybox;  // Puntero al skybox actual
+	Skybox skyboxDia(skyboxFacesDia);  // Skybox para el día
+	Skybox skyboxNoche(skyboxFacesNoche);  // Skybox para la noche
 
-	skybox = Skybox(skyboxFacesDia);
-
+	currentSkybox = &skyboxNoche;
 
 	Material_brillante = Material(4.0f, 256);
 	Material_opaco = Material(0.3f, 4);
 
-
-
+	// =============	Declaración de la LUZ DIRECCIONAL	=======================
 	//luz direccional, sólo 1 y siempre debe de existir
 	mainLight = DirectionalLight(1.0f, 1.0f, 1.0f,
 		0.3f, 0.3f,
@@ -796,7 +790,8 @@ int main()
 
 	unsigned int spotLightCount = 0, spotLightCount2 = 0;
 
-	//linterna
+
+	//luz foco
 	spotLights[0] = SpotLight(
 		1.0f, 1.0f, 0.0f,
 		0.045f, 5.0f,
@@ -807,7 +802,7 @@ int main()
 	spotLightCount++;
 
 	//Ahora debo de definir la spotlight que ilumina el tablero así bien 
-	// Modificación para atenuar la luz al 75%
+		// Modificación para atenuar la luz al 75%
 	spotLights2[0] = SpotLight(
 		1.0f, 1.0f, 1.0f,      // Color
 		0.045f, 0.45f,         // Intensidades ambiental y difusa atenuadas al 75%
@@ -819,14 +814,16 @@ int main()
 	spotLightCount2++;
 
 
-
 	GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0, uniformEyePosition = 0,
 		uniformSpecularIntensity = 0, uniformShininess = 0, uniformTextureOffset = 0;
 	GLuint uniformColor = 0;
-	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 2500.0f); //Campo de Visión
+	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 5000.0f);
+
+	//BORRAR
+	glm::vec3 posblackhawk = glm::vec3(2.0f, 0.0f, 0.0f);
 
 
-
+	//	-----INICIALIZACION DE VARIABLES DE BANDERAS, ETC
 	movMoneda = 0.0f;
 	movMonedaOffset = 0.55f;
 	rotMoneda = 0.0f;
@@ -858,12 +855,6 @@ int main()
 
 	Canica1Anim = false;
 
-	//Variables de PUNTUACION DEL PINBALL QUE SE VEN EN EL OBJETO
-	decU, decV, numU, numV = 0.0f;
-	num = 0;
-	num2 = 0;
-
-
 	//Valores Canica 2
 	CanicaAnim2 = false;
 	Canica2Edo = 0;
@@ -891,11 +882,33 @@ int main()
 	chopper2 = false;
 
 	//Valores Keyframes
-	glm::vec3 posblackhawk = glm::vec3(2.0f, 0.0f, 0.0f);
 	CanicaAnim3 = false;
 	Canica3Anim = false;
 
+
+	//TEXTURAS CON MOVIMIENTO
+	valorUnidades = 0;
+	valorDecenas = 0;
+	cambianum = 0.0f;
+	movTextura = 0.0f;
+	velTextura = 0.45f;
+
+	valorCoordUDecenas = 0.0f;
+	valorCoordVDecenas = 0.0f;
+
+	coordU = 0.25f;
+	coordV = -0.67f;
+	Cambio = false;
+	Iteracion = true;
+
+
+
 	//---------PARA TENER KEYFRAMES GUARDADOS NO VOLATILES QUE SIEMPRE SE UTILIZARAN SE DECLARAN AQUÍ
+
+	//KeyFrame[0].movAvion_x = 0.0f;
+	//KeyFrame[0].movAvion_y = 0.0f;
+	//KeyFrame[0].giroAvion = 0;
+
 	KeyFrame[0].movAvion_x = 0.0f;
 	KeyFrame[0].movAvion_y = 0.0f;
 
@@ -954,7 +967,6 @@ int main()
 	//---------FIN DE KEYFRAMES GUARDADOS NO VOLÁTILES
 
 
-
 	////Loop mientras no se cierra la ventana
 	while (!mainWindow.getShouldClose())
 	{
@@ -977,7 +989,6 @@ int main()
 			camera = &avatarCamera; // Cambiar a la cámara del avatar
 		}
 
-
 		glm::mat4 viewMatrix = camera->calculateViewMatrix();
 		// Usar viewMatrix para tus transformaciones y enviarla a los shaders
 
@@ -991,11 +1002,9 @@ int main()
 		}
 		glm::vec3 posAvatar = glm::vec3(-80.0f, 200.0f, 300.0f);
 
-
 		posAvatar.x = poscam.x;
 		posAvatar.z = poscam.z + 15;
 		posAvatar.y = poscam.y - 30;
-
 
 
 		if (mainWindow.getMonedaPinball()) {
@@ -1073,9 +1082,10 @@ int main()
 
 		//En caso de que el usuario quiera no llegar al limite de la palanca
 		if (palancaLista == true) {
-			if (mainWindow.getActivaLanzamiento() == true) {
+			if (mainWindow.getActivaLanzamiento() == true && movPalanca>4.0) {
 				movPalanca = 0.0f;
 				palancaLista = false;
+				lanzamientoCanica = true;
 			}
 		}
 
@@ -1482,30 +1492,35 @@ int main()
 		if (dia) {
 			if (contadorDiaNoche <= 1.0f) {
 				contadorDiaNoche += deltaTime * 0.002f;
+				currentSkybox = &skyboxDia;
 				//skybox = Skybox(skyboxFacesDia);
-				skyboxDia = true;
+				
 			}
 			else {
 				dia = false;
 				noche = true;
-				skyboxDia = false;
+				
+				currentSkybox = &skyboxNoche;
 				//skybox = Skybox(skyboxFacesNoche);
 			}
 		}
 		if (noche) {
 			if (contadorDiaNoche >= 0.0f) {
 				contadorDiaNoche -= deltaTime * 0.002f;
+				currentSkybox = &skyboxNoche;
 				//skybox = Skybox(skyboxFacesNoche);
-				skyboxNoche = true;
+
 			}
 			else {
 				dia = true;
 				noche = false;
-				skyboxNoche = false;
+				currentSkybox = &skyboxDia;
 				//skybox = Skybox(skyboxFacesDia);
 			}
 		}
 		mainLight.ChangeDiffuseAmbient(contadorDiaNoche, 0.3);
+
+
 
 
 		//Recibir eventos del usuario
@@ -1516,7 +1531,7 @@ int main()
 		// Clear the window
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		skybox.DrawSkybox(camera->calculateViewMatrix(), projection);
+		(*currentSkybox).DrawSkybox(camera->calculateViewMatrix(), projection);
 		shaderList[0].UseShader();
 		uniformModel = shaderList[0].GetModelLocation();
 		uniformProjection = shaderList[0].GetProjectionLocation();
@@ -1834,7 +1849,7 @@ int main()
 		model = glm::rotate(model, 90 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		estrellaTexture.UseTexture();
-		meshList[0]->RenderMesh();
+		meshList2[0]->RenderMesh();
 
 		//Whispy Woods
 		model = glm::mat4(1.0);
@@ -1934,17 +1949,6 @@ int main()
 		Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		Palanca.RenderModel();
 
-		//Pantalla de SCORE
-		//model = modelaux;
-		//model = glm::translate(model, glm::vec3(0.0f, 470.0f, -700.0f));
-		//model = glm::scale(model, glm::vec3(10.6f, 10.0f, 10.0f));
-		//model = glm::rotate(model, 90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		//glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		//glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
-		//glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera->calculateViewMatrix()));
-		//Pantalla.RenderModel();
-
-
 		//Resorte
 		model = modelaux;
 		model = glm::translate(model, glm::vec3(0.0f, 9.2f, -25.5f));
@@ -1954,9 +1958,6 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		Resorte.RenderModel();
-
-
-
 
 		//Monedita
 		model = glm::mat4(1.0);
@@ -1969,8 +1970,7 @@ int main()
 		Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		Coin.RenderModel();
 
-
-		//Canica del Pinball
+		//Canica del Pinball [Animación de posicionamiento]
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(0.0f, 42.5f, 545.5f));
 		model = glm::translate(model, glm::vec3(movCanicaX, 0.0f, -movCanicaZ));
@@ -2048,6 +2048,7 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		FlipperD.RenderModel();
 
+
 		//PIRÁMIDES  TEMARICAS DEL INFIERNO
 
 		// --Sección Izquierda de Pirámides
@@ -2062,7 +2063,7 @@ int main()
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera->calculateViewMatrix()));
 		rocosaTexture.UseTexture();
-		meshList[4]->RenderMesh();
+		meshList[0]->RenderMesh();
 
 		//Piramide Flipper
 
@@ -2075,7 +2076,7 @@ int main()
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera->calculateViewMatrix()));
 		rocosaTexture.UseTexture();
-		meshList[4]->RenderMesh();
+		meshList[0]->RenderMesh();
 
 
 
@@ -2090,7 +2091,7 @@ int main()
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera->calculateViewMatrix()));
 		rocosaTexture.UseTexture();
-		meshList[4]->RenderMesh();
+		meshList[0]->RenderMesh();
 
 		// --Sección Derecha de Pirámides
 		//Pirámide Central
@@ -2104,7 +2105,7 @@ int main()
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera->calculateViewMatrix()));
 		rocosaTexture.UseTexture();
-		meshList[4]->RenderMesh();
+		meshList[0]->RenderMesh();
 
 		//Piramide Flipper
 		modelaux = model;
@@ -2116,7 +2117,7 @@ int main()
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera->calculateViewMatrix()));
 		rocosaTexture.UseTexture();
-		meshList[4]->RenderMesh();
+		meshList[0]->RenderMesh();
 
 		//Extremo der
 		modelaux = model;
@@ -2129,148 +2130,285 @@ int main()
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera->calculateViewMatrix()));
 		rocosaTexture.UseTexture();
+		meshList[0]->RenderMesh();
+
+
+		//Agave ¿qué sucede si lo renderizan antes del coche y de la pista?
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(0.0f, 0.5f, -2.0f));
+		model = glm::scale(model, glm::vec3(2.0f, 2.0f, 2.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		//blending: transparencia o traslucidez
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		AgaveTexture.UseTexture();
+		Material_opaco.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		meshList[3]->RenderMesh();
+
+
+
+		//textura con movimiento
+		//Importantes porque la variable uniform no podemos modificarla directamente
+		toffsetflechau += 0.001;
+		toffsetflechav += 0.0;
+		//para que no se desborde la variable
+		if (toffsetflechau > 1.0)
+			toffsetflechau = 0.0;
+		//pasar a la variable uniform el valor actualizado
+		toffset = glm::vec2(toffsetflechau, toffsetflechav);
+		//textura con movimiento
+		//Importantes porque la variable uniform no podemos modificarla directamente
+		toffsetflechau += 0.001;
+		toffsetflechav += 0.0;
+		//para que no se desborde la variable
+		if (toffsetflechau > 1.0)
+			toffsetflechau = 0.0;
+		//if (toffsetv > 1.0)
+		//	toffsetv = 0;
+		//printf("\ntfosset %f \n", toffsetu);
+		//pasar a la variable uniform el valor actualizado
+		toffset = glm::vec2(toffsetflechau, toffsetflechav);
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(-2.0f, 1.0f, -6.0f));
+		model = glm::rotate(model, 90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(13.0f, 13.0f, 13.0f));
+		glUniform2fv(uniformTextureOffset, 1, glm::value_ptr(toffset));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		color = glm::vec3(0.0f, 0.0f, 1.0f);
+		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
+		FlechaTexture.UseTexture();
+		Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		meshList[4]->RenderMesh();
 
-		//Aminación unidad
-		if (num == 1) {
-			numU = 0.0f;
-			numV = 0.0f;
-		}
-		if (num == 2) {
-			numU = 0.25f;
-			numV = 0.0f;
-		}
-		if (num == 3) {
-			numU = 0.5f;
-			numV = 0.0f;
-		}
-		if (num == 4) {
-			numU = 0.75f;
-			numV = 0.0f;
-		}
-		if (num == 5) {
-			numU = 0.0f;
-			numV = -0.33f;
-		}
-		if (num == 6) {
-			numU = 0.25f;
-			numV = -0.33f;
-		}
-		if (num == 7) {
-			numU = 0.5f;
-			numV = -0.33f;
-		}
-		if (num == 8) {
-			numU = 0.75f;
-			numV = -0.33f;
-		}
-		if (num == 9) {
-			numU = 0.0f;
-			numV = -0.67f;
-		}
-		if (num == 0) {
-			numU = 0.25f;
-			decV = -0.67f;
+		//Para el NUMERO 0 DE UNIDADES 
+		if (valorUnidades == 0) {
+			if (movTextura < 5.0f)
+				movTextura += velTextura * deltaTime;
+			else {
+				coordU = 0.0f;
+				coordV = 0.0f;
+				movTextura = 0.0f;
+				valorUnidades = 1;
+			}
 		}
 
-		//Aminación decena
-		if (num2 == 1) {
-			decU = 0.0f;
-			decV = 0.0f;
-		}
-		if (num2 == 2) {
-			decU = 0.25f;
-			decV = 0.0f;
-		}
-		if (num2 == 3) {
-			decU = 0.5f;
-			decV = 0.0f;
-		}
-		if (num2 == 4) {
-			decU = 0.75f;
-			decV = 0.0f;
-		}
-		if (num2 == 5) {
-			decU = 0.0f;
-			decV = -0.33f;
-		}
-		if (num2 == 6) {
-			decU = 0.25f;
-			decV = -0.33f;
-		}
-		if (num2 == 7) {
-			decU = 0.5f;
-			decV = -0.33f;
-		}
-		if (num2 == 8) {
-			decU = 0.75f;
-			decV = -0.33f;
-		}
-		if (num2 == 9) {
-			decU = 0.0f;
-			decV = -0.67f;
-		}
-		if (num2 == 0) {
-			decU = 0.25f;
-			decV = -0.67f;
+		//Para el NUMERO 1
+		if (valorUnidades == 1) {
+			if (movTextura < 5.0f)
+				movTextura += velTextura * deltaTime;
+			else {
+				valorUnidades = 2;
+				movTextura = 0.0f;
+				coordU += 0.25f;
+			}
 		}
 
+		//Para el NUMERO 2
+		if (valorUnidades == 2) {
+			if (movTextura < 5.0f)
+				movTextura += velTextura * deltaTime;
+			else {
+				coordU += 0.25;
+				movTextura = 0.0f;
+				valorUnidades = 3;
+			}
+		}
+
+		//Para el NUMERO 3
+		if (valorUnidades == 3) {
+			if (movTextura < 5.0f)
+				movTextura += velTextura * deltaTime;
+			else {
+				coordU += 0.25;
+				movTextura = 0.0f;
+				valorUnidades = 4;
+			}
+		}
+
+		//Para el NUMERO 4
+		if (valorUnidades == 4) {
+			if (movTextura < 5.0f)
+				movTextura += velTextura * deltaTime;
+			else {
+				coordU = 0.0f;
+				coordV = -0.34f;
+				movTextura = 0.0f;
+				valorUnidades = 5;
+			}
+		}
+
+		//Para el NUMERO 5
+		if (valorUnidades == 5) {
+			if (movTextura < 5.0f)
+				movTextura += velTextura * deltaTime;
+			else {
+				coordU += 0.25;
+				movTextura = 0.0f;
+				valorUnidades = 6;
+			}
+		}
+
+		//Para el NUMERO 6
+		if (valorUnidades == 6) {
+			if (movTextura < 5.0f)
+				movTextura += velTextura * deltaTime;
+			else {
+				coordU += 0.25;
+				movTextura = 0.0f;
+				valorUnidades = 7;
+			}
+		}
+
+		//Para el NUMERO 7
+		if (valorUnidades == 7) {
+			if (movTextura < 5.0f)
+				movTextura += velTextura * deltaTime;
+			else {
+				coordU += 0.25;
+				movTextura = 0.0f;
+				valorUnidades = 8;
+			}
+		}
+
+		//Para el NUMERO 8
+		if (valorUnidades == 8) {
+			if (movTextura < 5.0f)
+				movTextura += velTextura * deltaTime;
+			else {
+				coordU = 0.0f;
+				coordV = -0.67f;
+				movTextura = 0.0f;
+				valorUnidades = 9;
+			}
+		}
+
+		//Para el NUMERO 9
+		if (valorUnidades == 9) {
+			if (movTextura < 5.0f)
+				movTextura += velTextura * deltaTime;
+			else {
+				coordU += 0.25;
+				movTextura = 0.0f;
+				valorUnidades = 0;
+				// Realizamos el reinicio del valor de las unidades a 0 ya que empezaria la suma de una decena para reiniciar ciclo
+				if (valorDecenas == 9) {
+					valorDecenas = 0;
+				}
+				else {
+					valorDecenas++; //Aquí definimos que nuestro valor de la decena se le sume una unidad
+				}
+			}
+		}
+
+		//Dibujado de la Textura Número [UNIDADES]
+		toffset = glm::vec2(coordU, coordV);
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(-10.0f, 10.0f, -6.0f));
+		model = glm::rotate(model, 90 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(3.0f, 3.0f, 3.0f));
+		glUniform2fv(uniformTextureOffset, 1, glm::value_ptr(toffset));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		color = glm::vec3(1.0f, 0.0f, 0.0f);
+		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
+		NumerosTexture.UseTexture();
+		Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		meshList[6]->RenderMesh();
+
+		//Aninación decena
+		if (valorDecenas == 0)
+		{
+			valorCoordUDecenas = 0.25f;
+			valorCoordVDecenas = -0.67f;
+		}
+
+		if (valorDecenas == 1)
+		{
+			valorCoordUDecenas = 0.0f;
+			valorCoordVDecenas = 0.0f;
+		}
+
+		if (valorDecenas == 2)
+		{
+			valorCoordUDecenas = 0.25f;
+		}
+
+		if (valorDecenas == 3)
+		{
+			valorCoordUDecenas = 0.5f;
+		}
+
+		if (valorDecenas == 4)
+		{
+			valorCoordUDecenas = 0.75f;
+		}
+		if (valorDecenas == 5)
+		{
+			valorCoordUDecenas = 0.0f;
+			valorCoordVDecenas = -0.33f;
+		}
+
+		if (valorDecenas == 6)
+		{
+			valorCoordUDecenas = 0.25f;
+		}
+
+		if (valorDecenas == 7)
+		{
+			valorCoordUDecenas = 0.5f;
+		}
+
+		if (valorDecenas == 8)
+		{
+			valorCoordUDecenas = 0.75f;
+		}
+
+		if (valorDecenas == 9)
+		{
+			valorCoordUDecenas = 0.0f;
+			valorCoordVDecenas = -0.67f;
+		}
+
+		//Dibujado de la Textura Número [DECENAS]
+		toffset = glm::vec2(valorCoordUDecenas, valorCoordVDecenas);
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(-12.8f, 10.0f, -6.0f));
+		model = glm::rotate(model, 90 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(3.0f, 3.0f, 3.0f));
+		glUniform2fv(uniformTextureOffset, 1, glm::value_ptr(toffset));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		color = glm::vec3(1.0f, 1.0f, 1.0f);
+		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
+		NumerosTexture.UseTexture();
+		Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		meshList[6]->RenderMesh();
+		glDisable(GL_BLEND);
 
 
+		glm::vec2 toffsetTapa(0.0f, 0.0f);
 
-		//Score
-		//Unidades
-		//toffset = glm::vec2(numU, numV);
-		//model = glm::mat4(1.0);
-		//model = glm::translate(model, glm::vec3(120.0f, 545.0f, -669.0f));
-		//model = glm::scale(model, glm::vec3(99.0f, 99.0f, 99.0f));
-		//model = glm::rotate(model, 90 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
-		//glUniform2fv(uniformTextureOffset, 1, glm::value_ptr(toffset));
-		//glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		//NumerosTexture.UseTexture();
-		//Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		//meshList[2]->RenderMesh();
-
-		////Decenas
-		//toffset = glm::vec2(decU, decV);
-		//model = glm::mat4(1.0);
-		//model = glm::translate(model, glm::vec3(0.0f, 545.0f, -669.0f));
-		//model = glm::scale(model, glm::vec3(99.0f, 99.0f, 99.0f));
-		//model = glm::rotate(model, 90 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
-		//glUniform2fv(uniformTextureOffset, 1, glm::value_ptr(toffset));
-		//glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		//NumerosTexture.UseTexture();
-		//Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		//meshList[2]->RenderMesh();
-
-
-
-		//------------------- CRISTAL TRANSPARENTE -------------------
 		modelaux = model;
 		model = modelauxCuerpoPinball;
 		model = glm::translate(model, glm::vec3(0.0f, 1.0f, -2.0f));
 		model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
+		glUniform2fv(uniformTextureOffset, 1, glm::value_ptr(toffsetTapa)); //PA QUE NO SE MUEVAN LAS TEXTURAS CANIJAS!
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
-		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera->calculateViewMatrix()));
-		color = glm::vec3(1.0f, 1.0f, 1.0f);
-		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
+		//glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera->calculateViewMatrix()));
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		Tapa.RenderModel();
 		glDisable(GL_BLEND);
 
-
 		shaderList[0].SetDirectionalLight(&mainLight);
-		glUseProgram(0);
 
+		glUseProgram(0);
 		mainWindow.swapBuffers();
 	}
 
 	return 0;
 }
 
-
+//esto se sustituye pa las nuevas keyframe
 void inputKeyframes(bool* keys)
 {
 	if (Canica3Anim)
