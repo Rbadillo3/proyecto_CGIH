@@ -636,7 +636,7 @@ int main()
 
 	// ----------- Elementos Pinball -------------
 	Pinball = Model();
-	Pinball.LoadModel("Models/PINBALL_V6.obj");
+	Pinball.LoadModel("Models/PINBALL_V7.obj");
 
 	Coin = Model();
 	Coin.LoadModel("Models/Coin.obj");
@@ -1082,7 +1082,7 @@ int main()
 
 		//En caso de que el usuario quiera no llegar al limite de la palanca
 		if (palancaLista == true) {
-			if (mainWindow.getActivaLanzamiento() == true && movPalanca>4.0) {
+			if (mainWindow.getActivaLanzamiento() == true && movPalanca > 4.0) {
 				movPalanca = 0.0f;
 				palancaLista = false;
 				lanzamientoCanica = true;
@@ -1494,12 +1494,12 @@ int main()
 				contadorDiaNoche += deltaTime * 0.002f;
 				currentSkybox = &skyboxDia;
 				//skybox = Skybox(skyboxFacesDia);
-				
+
 			}
 			else {
 				dia = false;
 				noche = true;
-				
+
 				currentSkybox = &skyboxNoche;
 				//skybox = Skybox(skyboxFacesNoche);
 			}
@@ -1790,6 +1790,7 @@ int main()
 		//Cuerpo Kirby
 		model = modelauxCuerpoPinball;
 		model = glm::translate(model, posAvatar);
+		model = glm::rotate(model, -angulo_cam, glm::vec3(0.0f, 1.0f, 0.0f));
 		modelauxCuerpoKirby = model;
 		modelauxKirbyC = model;
 		model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
@@ -2371,11 +2372,12 @@ int main()
 		//Dibujado de la Textura Número [DECENAS]
 		toffset = glm::vec2(valorCoordUDecenas, valorCoordVDecenas);
 		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(-12.8f, 10.0f, -6.0f));
+		model = glm::translate(model, glm::vec3(-12.8f, 455.0f, -680.0f));
 		model = glm::rotate(model, 90 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(3.0f, 3.0f, 3.0f));
+		model = glm::scale(model, glm::vec3(30.0f, 30.0f, 30.0f));
 		glUniform2fv(uniformTextureOffset, 1, glm::value_ptr(toffset));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera->calculateViewMatrix()));
 		color = glm::vec3(1.0f, 1.0f, 1.0f);
 		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
 		NumerosTexture.UseTexture();
@@ -2386,6 +2388,7 @@ int main()
 
 		glm::vec2 toffsetTapa(0.0f, 0.0f);
 
+		//Tapa de Tablero de Pinball
 		modelaux = model;
 		model = modelauxCuerpoPinball;
 		model = glm::translate(model, glm::vec3(0.0f, 1.0f, -2.0f));
