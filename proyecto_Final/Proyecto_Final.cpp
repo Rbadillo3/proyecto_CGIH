@@ -46,8 +46,8 @@ const float toRadians = 3.14159265f / 180.0f;
 
 //Para implementación de audio
 
-//#include <irrKlang.h>
-//using namespace irrklang;
+#include <irrKlang.h>
+using namespace irrklang;
 
 // =========				Variables de control para animación				===============
 
@@ -138,6 +138,10 @@ bool chopper2;
 float giroChopper2;
 float velGiroChopper;
 float saltoOffset;
+
+//Variables de manejo de audio
+// Inicializar el motor de sonido
+ISoundEngine* engine = createIrrKlangDevice();
 
 
 Window mainWindow;
@@ -432,7 +436,7 @@ float	movAvion_x = 0.0f, movAvion_y = 0.0f;
 float giroAvion = 0;
 
 #define MAX_FRAMES 100
-int i_max_steps = 20;
+int i_max_steps = 55;
 int i_curr_steps = 18;
 typedef struct _frame
 {
@@ -569,7 +573,7 @@ void CreatePiramide() {
 
 int main()
 {
-	mainWindow = Window(1366, 768); // 1280, 1024 or 1024, 768
+	mainWindow = Window(1920, 1080); // 1280, 1024 or 1024, 768
 	mainWindow.Initialise();
 
 	CreateShaders();
@@ -891,7 +895,7 @@ int main()
 	valorDecenas = 0;
 	cambianum = 0.0f;
 	movTextura = 0.0f;
-	velTextura = 0.45f;
+	velTextura = 0.35f;
 
 	valorCoordUDecenas = 0.0f;
 	valorCoordVDecenas = 0.0f;
@@ -1056,7 +1060,7 @@ int main()
 					CanicaAnim = true;
 				else if (!finAnim2 && finAnim1) //Activamos Canica 2
 					CanicaAnim2 = true;
-				else if (!finAnim3 && finAnim2)
+				else if (!finAnim3 && finAnim2) //Activamos Canica 3
 					CanicaAnim3 = true;
 
 				//Se reinician los valores de la canica 0
@@ -1209,6 +1213,7 @@ int main()
 					}
 					else {
 						CanicaAnim = false;
+						Canica1Anim = false;
 						finAnim1 = true;
 						avanzaCanicaZ = true;
 					}
@@ -1434,6 +1439,7 @@ int main()
 					}
 					else {
 						CanicaAnim2 = false;
+						Canica2Anim = false;
 						finAnim2 = true;
 						avanzaCanicaZ = true;
 					}
@@ -1607,7 +1613,7 @@ int main()
 
 		//Grim (Puro Hueso pa los compas)
 		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(60.0f, 64.0f, 360.0f));
+		model = glm::translate(model, glm::vec3(60.0f, 66.0f, 360.0f));
 		model = glm::scale(model, glm::vec3(5.0f, 5.0f, 5.0f));
 		model = glm::rotate(model, 15 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -2168,148 +2174,202 @@ int main()
 		//	toffsetv = 0;
 		//printf("\ntfosset %f \n", toffsetu);
 		//pasar a la variable uniform el valor actualizado
+
+		//FLECHAS CON MOVIMIENTO
+
+		//1
 		toffset = glm::vec2(toffsetflechau, toffsetflechav);
 		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(-2.0f, 1.0f, -6.0f));
-		model = glm::rotate(model, 90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(13.0f, 13.0f, 13.0f));
+		model = glm::translate(model, glm::vec3(208.0f, 40.0f, 470.5f));
+		model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, -15 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(40.0f, 40.0f, 40.0f));
 		glUniform2fv(uniformTextureOffset, 1, glm::value_ptr(toffset));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		color = glm::vec3(0.0f, 0.0f, 1.0f);
 		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
 		FlechaTexture.UseTexture();
 		Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		//Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		meshList[4]->RenderMesh();
 
-		//Para el NUMERO 0 DE UNIDADES 
-		if (valorUnidades == 0) {
-			if (movTextura < 5.0f)
-				movTextura += velTextura * deltaTime;
-			else {
-				coordU = 0.0f;
-				coordV = 0.0f;
-				movTextura = 0.0f;
-				valorUnidades = 1;
-			}
-		}
+		//2
+		toffset = glm::vec2(toffsetflechau, toffsetflechav);
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(208.0f, 136.4f, 100.0f));
+		model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, -15 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(40.0f, 40.0f, 40.0f));
+		glUniform2fv(uniformTextureOffset, 1, glm::value_ptr(toffset));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
+		FlechaTexture.UseTexture();
+		Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		//Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		meshList[4]->RenderMesh();
 
-		//Para el NUMERO 1
-		if (valorUnidades == 1) {
-			if (movTextura < 5.0f)
-				movTextura += velTextura * deltaTime;
-			else {
-				valorUnidades = 2;
-				movTextura = 0.0f;
-				coordU += 0.25f;
-			}
-		}
+		//3
+		toffset = glm::vec2(toffsetflechau, toffsetflechav);
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(208.0f, 232.8f, -270.5f));
+		model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, -15 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(40.0f, 40.0f, 40.0f));
+		glUniform2fv(uniformTextureOffset, 1, glm::value_ptr(toffset));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
+		FlechaTexture.UseTexture();
+		Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		//Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		meshList[4]->RenderMesh();
 
-		//Para el NUMERO 2
-		if (valorUnidades == 2) {
-			if (movTextura < 5.0f)
-				movTextura += velTextura * deltaTime;
-			else {
-				coordU += 0.25;
-				movTextura = 0.0f;
-				valorUnidades = 3;
-			}
-		}
+		//4
+		toffset = glm::vec2(toffsetflechau, toffsetflechav);
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(0.0f, 136.4f, 100.0f));
+		model = glm::rotate(model, 90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, 15 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(40.0f, 40.0f, 40.0f));
+		glUniform2fv(uniformTextureOffset, 1, glm::value_ptr(toffset));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
+		FlechaTexture.UseTexture();
+		Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		//Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		meshList[4]->RenderMesh();
 
-		//Para el NUMERO 3
-		if (valorUnidades == 3) {
-			if (movTextura < 5.0f)
-				movTextura += velTextura * deltaTime;
-			else {
-				coordU += 0.25;
-				movTextura = 0.0f;
-				valorUnidades = 4;
-			}
-		}
+		if (Canica1Anim || Canica2Anim || Canica3Anim) {
 
-		//Para el NUMERO 4
-		if (valorUnidades == 4) {
-			if (movTextura < 5.0f)
-				movTextura += velTextura * deltaTime;
-			else {
-				coordU = 0.0f;
-				coordV = -0.34f;
-				movTextura = 0.0f;
-				valorUnidades = 5;
-			}
-		}
-
-		//Para el NUMERO 5
-		if (valorUnidades == 5) {
-			if (movTextura < 5.0f)
-				movTextura += velTextura * deltaTime;
-			else {
-				coordU += 0.25;
-				movTextura = 0.0f;
-				valorUnidades = 6;
-			}
-		}
-
-		//Para el NUMERO 6
-		if (valorUnidades == 6) {
-			if (movTextura < 5.0f)
-				movTextura += velTextura * deltaTime;
-			else {
-				coordU += 0.25;
-				movTextura = 0.0f;
-				valorUnidades = 7;
-			}
-		}
-
-		//Para el NUMERO 7
-		if (valorUnidades == 7) {
-			if (movTextura < 5.0f)
-				movTextura += velTextura * deltaTime;
-			else {
-				coordU += 0.25;
-				movTextura = 0.0f;
-				valorUnidades = 8;
-			}
-		}
-
-		//Para el NUMERO 8
-		if (valorUnidades == 8) {
-			if (movTextura < 5.0f)
-				movTextura += velTextura * deltaTime;
-			else {
-				coordU = 0.0f;
-				coordV = -0.67f;
-				movTextura = 0.0f;
-				valorUnidades = 9;
-			}
-		}
-
-		//Para el NUMERO 9
-		if (valorUnidades == 9) {
-			if (movTextura < 5.0f)
-				movTextura += velTextura * deltaTime;
-			else {
-				coordU += 0.25;
-				movTextura = 0.0f;
-				valorUnidades = 0;
-				// Realizamos el reinicio del valor de las unidades a 0 ya que empezaria la suma de una decena para reiniciar ciclo
-				if (valorDecenas == 9) {
-					valorDecenas = 0;
-				}
+			//Para el NUMERO 0 DE UNIDADES 
+			if (valorUnidades == 0) {
+				if (movTextura < 5.0f)
+					movTextura += velTextura * deltaTime;
 				else {
-					valorDecenas++; //Aquí definimos que nuestro valor de la decena se le sume una unidad
+					coordU = 0.0f;
+					coordV = 0.0f;
+					movTextura = 0.0f;
+					valorUnidades = 1;
 				}
 			}
+
+			//Para el NUMERO 1
+			if (valorUnidades == 1) {
+				if (movTextura < 5.0f)
+					movTextura += velTextura * deltaTime;
+				else {
+					valorUnidades = 2;
+					movTextura = 0.0f;
+					coordU += 0.25f;
+				}
+			}
+
+			//Para el NUMERO 2
+			if (valorUnidades == 2) {
+				if (movTextura < 5.0f)
+					movTextura += velTextura * deltaTime;
+				else {
+					coordU += 0.25;
+					movTextura = 0.0f;
+					valorUnidades = 3;
+				}
+			}
+
+			//Para el NUMERO 3
+			if (valorUnidades == 3) {
+				if (movTextura < 5.0f)
+					movTextura += velTextura * deltaTime;
+				else {
+					coordU += 0.25;
+					movTextura = 0.0f;
+					valorUnidades = 4;
+				}
+			}
+
+			//Para el NUMERO 4
+			if (valorUnidades == 4) {
+				if (movTextura < 5.0f)
+					movTextura += velTextura * deltaTime;
+				else {
+					coordU = 0.0f;
+					coordV = -0.34f;
+					movTextura = 0.0f;
+					valorUnidades = 5;
+				}
+			}
+
+			//Para el NUMERO 5
+			if (valorUnidades == 5) {
+				if (movTextura < 5.0f)
+					movTextura += velTextura * deltaTime;
+				else {
+					coordU += 0.25;
+					movTextura = 0.0f;
+					valorUnidades = 6;
+				}
+			}
+
+			//Para el NUMERO 6
+			if (valorUnidades == 6) {
+				if (movTextura < 5.0f)
+					movTextura += velTextura * deltaTime;
+				else {
+					coordU += 0.25;
+					movTextura = 0.0f;
+					valorUnidades = 7;
+				}
+			}
+
+			//Para el NUMERO 7
+			if (valorUnidades == 7) {
+				if (movTextura < 5.0f)
+					movTextura += velTextura * deltaTime;
+				else {
+					coordU += 0.25;
+					movTextura = 0.0f;
+					valorUnidades = 8;
+				}
+			}
+
+			//Para el NUMERO 8
+			if (valorUnidades == 8) {
+				if (movTextura < 5.0f)
+					movTextura += velTextura * deltaTime;
+				else {
+					coordU = 0.0f;
+					coordV = -0.67f;
+					movTextura = 0.0f;
+					valorUnidades = 9;
+				}
+			}
+
+			//Para el NUMERO 9
+			if (valorUnidades == 9) {
+				if (movTextura < 5.0f)
+					movTextura += velTextura * deltaTime;
+				else {
+					coordU += 0.25;
+					movTextura = 0.0f;
+					valorUnidades = 0;
+					// Realizamos el reinicio del valor de las unidades a 0 ya que empezaria la suma de una decena para reiniciar ciclo
+					if (valorDecenas == 9) {
+						valorDecenas = 0;
+					}
+					else {
+						valorDecenas++; //Aquí definimos que nuestro valor de la decena se le sume una unidad
+					}
+				}
+			}
+
 		}
 
 		//Dibujado de la Textura Número [UNIDADES]
 		toffset = glm::vec2(coordU, coordV);
 		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(-10.0f, 10.0f, -6.0f));
+		model = glm::translate(model, glm::vec3(18.0f, 455.0f, -680.0f));
 		model = glm::rotate(model, 90 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(3.0f, 3.0f, 3.0f));
+		model = glm::scale(model, glm::vec3(30.0f, 30.0f, 30.0f));
 		glUniform2fv(uniformTextureOffset, 1, glm::value_ptr(toffset));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		color = glm::vec3(1.0f, 0.0f, 0.0f);
+		color = glm::vec3(1.0f, 1.0f, 1.0f);
 		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
 		NumerosTexture.UseTexture();
 		Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
@@ -2388,7 +2448,6 @@ int main()
 
 		glm::vec2 toffsetTapa(0.0f, 0.0f);
 
-		//Tapa de Tablero de Pinball
 		modelaux = model;
 		model = modelauxCuerpoPinball;
 		model = glm::translate(model, glm::vec3(0.0f, 1.0f, -2.0f));
@@ -2432,12 +2491,13 @@ void inputKeyframes(bool* keys)
 				reproduciranimacion++;
 				//printf("\n presiona 0 para habilitar reproducir de nuevo la animación'\n");
 				habilitaranimacion = 0;
-
+				Canica3Anim = false;
 			}
 			else
 			{
 				play = false;
 				CanicaAnim3 = false;
+				Canica3Anim = false;
 				finAnim3 = true;
 			}
 		}
