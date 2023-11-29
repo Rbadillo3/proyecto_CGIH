@@ -17,7 +17,7 @@ Integrantes:
 #include <cmath>
 #include <vector>
 #include <math.h>
-
+#include <cmath>
 #include <glew.h>
 #include <glfw3.h>
 
@@ -52,7 +52,7 @@ using namespace irrklang;
 // =========				Variables de control para animación				===============
 
 //========== Dia y noche =====
-float contadorDiaNoche = 0.0f;
+float contadorDiaNoche = 0.5f;
 bool dia = true;
 bool noche = false;
 
@@ -166,7 +166,9 @@ Texture white;
 // =========				Variables de MODELOS				===============
 
 //====	Star Wars
+Model Tubo;
 Model CañoneraLAAT;
+Model ARCCañoneraLAAT;
 Model ComandanteFordo;
 Model FighterTank;
 Model Chopper;
@@ -671,14 +673,19 @@ int main()
 
 
 	// ----------- Elementos Star Wars -------------
+
 	CañoneraLAAT = Model();
 	CañoneraLAAT.LoadModel("Models/rep_la_at_gunship.obj");
+	ARCCañoneraLAAT = Model();
+	ARCCañoneraLAAT.LoadModel("Models/NaveARC.obj");
 	FighterTank = Model();
 	FighterTank.LoadModel("Models/rep_hover_fightertank.obj");
 	ComandanteFordo = Model();
 	ComandanteFordo.LoadModel("Models/Fordo.obj");
 	FlipperSable = Model();
 	FlipperSable.LoadModel("Models/lightsaber.obj");
+	Tubo = Model();
+	Tubo.LoadModel("Models/Tubo.obj");
 
 	//Chopper Objeto Jerárquico Animado Instanciado Varias Veces (OJAIVV)
 	Chopper = Model();
@@ -745,6 +752,38 @@ int main()
 
 
 	//AUDIO
+
+	ISoundEngine* soundEngine = createIrrKlangDevice();
+	
+	if (!soundEngine) {
+		// Manejo de error si no se pudo crear el motor de sonido
+		printf("NO SE PUDO CREAR MOTOR DE SONIDO");
+		return 1;
+	}
+
+	const char* FilePathIntro = "Models/Kirby_s-Pinball-Land-Title-Theme.wav";
+	const char* FilePathCarga = "Models/FNAF-World-OST-Final-Boss-Music-Extended-_Perfect-Loop_.wav";
+
+	const char* FilePathStarWars = "Models/ARC-TROOPER-FORDO.wav";
+
+	ISound* soundIntro = soundEngine->play2D(FilePathIntro, true, false, true);
+	ISound* soundCarga = soundEngine->play2D(FilePathCarga, true, false, true);
+
+	vec3df sound2Position(208.0f, 40.0f, 470.5f);
+	ISound* sound2 = soundEngine->play3D(FilePathCarga, sound2Position, true, false, true);
+	
+	float minDistance = 100.0f;
+	float distance=0.0f;
+
+	
+
+	if (soundIntro|| mainWindow.getReset()==true) {
+		soundIntro->setVolume(0.95f);
+		soundCarga->setIsPaused(false);
+		soundCarga->setIsPaused(true);
+	}
+	
+
 
 	//SKYBOX
 	std::vector<std::string> skyboxFacesDia;
@@ -848,6 +887,8 @@ int main()
 	lanzamientoCanica = false;
 
 
+	dia = true;
+	noche = false;
 
 	//Valores Animación placeholder
 	CanicaAnim = false;
@@ -1004,8 +1045,8 @@ int main()
 		if (dircam.x > 0) {
 			angulo_cam += (180 * toRadians);
 		}
-		glm::vec3 posAvatar = glm::vec3(-80.0f, 200.0f, 300.0f);
 
+		glm::vec3 posAvatar = glm::vec3(-80.0f, 200.0f, 300.0f);
 		posAvatar.x = poscam.x;
 		posAvatar.z = poscam.z + 15;
 		posAvatar.y = poscam.y - 30;
@@ -1030,6 +1071,11 @@ int main()
 		}
 
 		if (avanzaCanicaZ == true) {
+			soundIntro->stop();
+			soundCarga->setIsPaused(false);
+			soundCarga->setVolume(1.0f);
+
+
 			//printf("avanza la canica PA ARRIBA%f \n ", movMoneda);
 			if (movCanicaZ < 35.0f) {
 				movCanicaZ += movCanicaOffset * deltaTime;
@@ -1494,11 +1540,13 @@ int main()
 		GLfloat cameraPitch = 0.0f; // Mantener el horizonte nivelado
 
 		// ---------MANEJO DE ILUMINACIÓN PARA CICLO DE DÍA Y DE NOCHE-----------
+		const float duracionCiclo = 20.0f;
 
+		//printf("%f\n", contadorDiaNoche);
 		if (dia) {
-			if (contadorDiaNoche <= 1.0f) {
+			if (contadorDiaNoche <= 0.99f) {
 				contadorDiaNoche += deltaTime * 0.002f;
-				currentSkybox = &skyboxDia;
+				//currentSkybox = &skyboxDia;
 				//skybox = Skybox(skyboxFacesDia);
 
 			}
@@ -1506,28 +1554,35 @@ int main()
 				dia = false;
 				noche = true;
 
-				currentSkybox = &skyboxNoche;
+				//currentSkybox = &skyboxNoche;
 				//skybox = Skybox(skyboxFacesNoche);
 			}
 		}
 		if (noche) {
 			if (contadorDiaNoche >= 0.0f) {
 				contadorDiaNoche -= deltaTime * 0.002f;
-				currentSkybox = &skyboxNoche;
+				//currentSkybox = &skyboxNoche;
 				//skybox = Skybox(skyboxFacesNoche);
 
 			}
 			else {
 				dia = true;
 				noche = false;
-				currentSkybox = &skyboxDia;
+				//currentSkybox = &skyboxDia;
 				//skybox = Skybox(skyboxFacesDia);
 			}
 		}
+
+		if (contadorDiaNoche >= 0.15f && contadorDiaNoche <= 1.0f) {
+			currentSkybox = &skyboxDia;
+		}
+		else {
+			currentSkybox = &skyboxNoche;
+		}
+
+
+
 		mainLight.ChangeDiffuseAmbient(contadorDiaNoche, 0.3);
-
-
-
 
 		//Recibir eventos del usuario
 		glfwPollEvents();
@@ -1588,6 +1643,7 @@ int main()
 		// -----------= Definición de Matrices y Matrices de Apoyo =-------------
 		glm::mat4 model(1.0);
 		glm::mat4 modelaux(1.0);
+		glm::mat4 modelauxCañonera(1.0);
 		glm::mat4 modelauxCuerpoPinball(1.0);
 		glm::mat4 modelauxFlipper(1.0);
 		glm::mat4 modelauxKirbyC(1.0);
@@ -1681,24 +1737,30 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Mano.RenderModel();
 
-		//Roca
-		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(100.0f, 5.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Roca.RenderModel();
 
 
 		// ---------OBJETOS DE STAR WARS-----------
+		
+
+
 		//Cañonera 1
 		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(124.0f, 274.8f, -420.0f));
+		model = glm::translate(model, glm::vec3(124.0f, 278.8f, -420.0f));
+		modelauxCañonera = model;
 		model = glm::rotate(model, 90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, 15 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(0.85f, 0.85f, 0.85f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		CañoneraLAAT.RenderModel();
+		ARCCañoneraLAAT.RenderModel();
 
+		// Tubo
+		model = modelauxCañonera;
+		model = glm::translate(model, glm::vec3(0.0f, -10.0f, 5.0f));
+		//model = glm::rotate(model, 15 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(10.85f, 10.85f, 10.85f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Tubo.RenderModel();
+		
 		//Cañonera 2
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(124.0f, 252.5f, -335.0f));
@@ -1707,6 +1769,7 @@ int main()
 		model = glm::scale(model, glm::vec3(0.85f, 0.85f, 0.85f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		CañoneraLAAT.RenderModel();
+
 
 		//Tanque
 		model = glm::mat4(1.0);
@@ -1906,17 +1969,113 @@ int main()
 
 		// --------- OBJETOS DE PINBALL -----------
 
-		//Para apagar la luz del FOCO
-		if (mainWindow.getapagaLuzLinternaVerde())
+		//Para apagar la luz de Kirby
+		if (mainWindow.getapagaLuzFoco())
 		{
 			shaderList[0].SetSpotLights(&spotLights[0], 1);
 		}
 
 
-		// Para apagar la linterna 
+		// Para apagar la luz del foco
 		if (mainWindow.getapagaLuz())
 		{
 			shaderList[0].SetSpotLights(spotLights2, spotLightCount2 - 1);
+		}
+
+
+		//Apagar luz roja de Flippers
+		if (mainWindow.getapagaLuzLinternaRoja())
+		{
+			shaderList[0].SetPointLights(pointLights, pointLightCount - 1);
+		}
+
+		//Para el botón de Reset
+		if (mainWindow.getReset()) {
+			float toffsetflechau = 0.0f;
+			float toffsetflechav = 0.0f;
+			float toffsetnumerou = 0.0f;
+			float toffsetnumerov = 0.0f;
+			float toffsetnumerocambiau = 0.0;
+			float angulovaria = 0.0f;
+			movMoneda = 0.0f;
+			movMonedaOffset = 0.55f;
+			rotMoneda = 0.0f;
+			rotMonedaOffset = 5.0f;
+			avanzaMoneda = true;
+
+			movCanicaX = 0.0f;
+			movCanicaY = 0.0f;
+			movCanicaZ = 0.0f;
+			movPalanca = 0.0f;
+			movCanicaOffset = 3.75f;
+			rotCanica = 0.0f;
+			rotCanicaOffset = 5.0f;
+			avanzaCanicaX = false;
+			avanzaCanicaY = false;
+			avanzaCanicaZ = false;
+			movPalancaOffset = 0.15f;
+			lanzamientoCanica = false;
+
+
+
+			//Valores Animación placeholder
+			CanicaAnim = false;
+			Canica1Edo = 0; //La canica empieza en el estado 0
+			CanX = 0.0f;
+			velCanX = 3.0f;
+			CanZ = 0.0f;
+			velCanZ = 3.0f;
+
+			Canica1Anim = false;
+
+			//Valores Canica 2
+			CanicaAnim2 = false;
+			Canica2Edo = 0;
+			Can2X = 0.0f;
+			Can2Z = 0.0f;
+			rebote = 5;
+
+			Canica2Anim = false;
+
+			//Velocidad de animacion simple
+			newVel = 2.0f;
+
+			//Valores control fin animación canica
+			finAnim1 = false;
+			finAnim2 = false;
+			finAnim3 = false;
+
+			//Valores animación objeto jerárquico
+			giroChopper = 0.0f;
+			saltoChopper = 0.0f;
+			giroChopper2 = 0.0f;
+			velGiroChopper = 25.0f;
+			saltoOffset = 0.7f;
+			chopper1 = false;
+			chopper2 = false;
+
+			//Valores Keyframes
+			CanicaAnim3 = false;
+			Canica3Anim = false;
+
+
+			//TEXTURAS CON MOVIMIENTO
+			valorUnidades = 0;
+			valorDecenas = 0;
+			cambianum = 0.0f;
+			movTextura = 0.0f;
+			velTextura = 0.35f;
+
+			valorCoordUDecenas = 0.0f;
+			valorCoordVDecenas = 0.0f;
+
+			coordU = 0.25f;
+			coordV = -0.67f;
+			Cambio = false;
+			Iteracion = true;
+			soundCarga->setIsPaused(false);
+			soundIntro->setVolume(0.95f);
+			soundCarga->setIsPaused(true);
 		}
 
 
@@ -2143,7 +2302,7 @@ int main()
 		//Agave ¿qué sucede si lo renderizan antes del coche y de la pista?
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(0.0f, 0.5f, -2.0f));
-		model = glm::scale(model, glm::vec3(2.0f, 2.0f, 2.0f));
+		model = glm::scale(model, glm::vec3(0.001f, 0.001f, 0.001f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		//blending: transparencia o traslucidez
 		glEnable(GL_BLEND);
@@ -2237,8 +2396,9 @@ int main()
 		//Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		meshList[4]->RenderMesh();
 
-		if (Canica1Anim || Canica2Anim || Canica3Anim) {
+		if (Canica1Anim || Canica2Anim || Canica3Anim &&finAnim3==false) {
 
+			
 			//Para el NUMERO 0 DE UNIDADES 
 			if (valorUnidades == 0) {
 				if (movTextura < 5.0f)
@@ -2429,6 +2589,7 @@ int main()
 			valorCoordVDecenas = -0.67f;
 		}
 
+
 		//Dibujado de la Textura Número [DECENAS]
 		toffset = glm::vec2(valorCoordUDecenas, valorCoordVDecenas);
 		model = glm::mat4(1.0);
@@ -2473,6 +2634,7 @@ int main()
 //esto se sustituye pa las nuevas keyframe
 void inputKeyframes(bool* keys)
 {
+
 	if (Canica3Anim)
 	{
 		//printf("Cero\n");
@@ -2491,6 +2653,8 @@ void inputKeyframes(bool* keys)
 				reproduciranimacion++;
 				//printf("\n presiona 0 para habilitar reproducir de nuevo la animación'\n");
 				habilitaranimacion = 0;
+				Canica1Anim = false;
+				Canica2Anim = false;
 				Canica3Anim = false;
 			}
 			else
