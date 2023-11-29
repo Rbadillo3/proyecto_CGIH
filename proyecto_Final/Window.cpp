@@ -25,15 +25,22 @@ Window::Window(GLint windowWidth, GLint windowHeight)
 	ActivaPalanca = false;
 	Canica1 = false;
 	CamaraVis = 2;
+
+	PieDKirby = 0.0f;
+	PieIKirby = 0.0f;
+	BraDKirby = 0.0f;
+	BraIKirby = 0.0f;
+
 	// ---------------------------------------------- //
+	Reset = false;
 	muevexCarro = 0.01f;
 	muevexCarroAdelante = 0.01f;
 	muevexCarroAtras = 0.01f;
 	CarroAdelante = false;
 	CarroAtras = false;
-	apagaluz = true;
-	apagaluzLinternaVerde = false;
-	apagaluzLinternaRoja = false;
+	apagaluz = false;
+	apagaluzFoco = true;
+	apagaluzLinternaRoja = true;
 	apagaluzLinternaAzul = false;
 	apagaluz2 = true;
 	apagaluzControl = true;
@@ -65,7 +72,7 @@ int Window::Initialise()
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
 	//CREAR VENTANA
-	mainWindow = glfwCreateWindow(width, height, "Proyecto Final Lab CGEIHC 2024-1: Pinball (Billy & Mandy, Kirby, Star Wars).", NULL, NULL);
+	mainWindow = glfwCreateWindow(width, height, "Proyecto Final CGEIHC 2024-1: Tablero de Pinball (Billy & Mandy, Kirby, Star Wars _ ).", NULL, NULL);
 
 	if (!mainWindow)
 	{
@@ -140,10 +147,6 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 
 
 
-	if (key == GLFW_KEY_L && action == GLFW_PRESS)
-	{
-		theWindow->apagaluz = !(theWindow->apagaluz);
-	}
 
 	if (key == GLFW_KEY_I && action == GLFW_PRESS)
 	{
@@ -152,10 +155,15 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 
 	if (key == GLFW_KEY_M && action == GLFW_PRESS)
 	{
-		theWindow->apagaluzLinternaVerde = !(theWindow->apagaluzLinternaVerde);
+		theWindow->apagaluzFoco = !(theWindow->apagaluzFoco);
 	}
 
-	if (key == GLFW_KEY_N && action == GLFW_PRESS)
+	if (key == GLFW_KEY_L && action == GLFW_PRESS)
+	{
+		theWindow->apagaluz = !(theWindow->apagaluz);
+	}
+
+	if (key == GLFW_KEY_F && action == GLFW_PRESS)
 	{
 		theWindow->apagaluzLinternaRoja = !(theWindow->apagaluzLinternaRoja);
 	}
@@ -163,6 +171,12 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 	if (key == GLFW_KEY_B && action == GLFW_PRESS)
 	{
 		theWindow->apagaluzLinternaAzul = !(theWindow->apagaluzLinternaAzul);
+	}
+
+
+	if (key == GLFW_KEY_0 && action == GLFW_PRESS)
+	{
+		theWindow->Reset = !(theWindow->Reset);
 	}
 
 	// ---- MOVIMIENTO DE LOS FLIPPERS ------- //
@@ -217,6 +231,52 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 		theWindow->CamaraVis = 3;
 	}
 
+	// ---------------KIRBY MOV------------------------------- //
+	if (key == GLFW_KEY_W || key == GLFW_KEY_A || key == GLFW_KEY_S || key == GLFW_KEY_D)
+	{
+		if (theWindow->PieDKirby >= 55.0) {
+
+			theWindow->PieDKirby = -55.0f;
+		}
+		else {
+			theWindow->PieDKirby += 5.0f;
+		}
+	}
+
+	if (key == GLFW_KEY_W || key == GLFW_KEY_A || key == GLFW_KEY_S || key == GLFW_KEY_D)
+	{
+		if (theWindow->PieIKirby <= -55.0) {
+
+			theWindow->PieIKirby = 55.0f;
+		}
+		else {
+			theWindow->PieIKirby -= 5.0f;
+		}
+	}
+
+	if (key == GLFW_KEY_W || key == GLFW_KEY_A || key == GLFW_KEY_S || key == GLFW_KEY_D)
+	{
+		if (theWindow->BraIKirby >= 55.0) {
+
+			theWindow->BraIKirby = -55.0f;
+		}
+		else {
+			theWindow->BraIKirby += 5.0f;
+		}
+	}
+
+	if (key == GLFW_KEY_W || key == GLFW_KEY_A || key == GLFW_KEY_S || key == GLFW_KEY_D)
+	{
+		if (theWindow->BraDKirby <= -55.0) {
+
+			theWindow->BraDKirby = 55.0f;
+		}
+		else {
+			theWindow->BraDKirby -= 5.0f;
+		}
+	}
+
+	// ---------------------------------------------- //
 
 	if (key >= 0 && key < 1024)
 	{
