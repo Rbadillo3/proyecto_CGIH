@@ -19,37 +19,24 @@ public:
 	GLfloat getFlipperI() { return FlipperI; }
 	GLfloat getFlipperISW() { return FlipperISW; }
 	GLfloat getFlipperD() { return FlipperD; }
+	GLfloat getReset() { return Reset; }
 	GLfloat getPalanca() { return Palanca; }
 	GLfloat getMonedaPinball() { return MonedaPinball; }
 	GLfloat getActivaPalanca() { return ActivaPalanca; }
 	GLfloat getActivaLanzamiento() { return  ActivaLanzamiento; }
 	GLboolean getapagaLuz() { return apagaluz; }	//Metodo para apagar la luz de PINBALL 1
 	int getCamaraVis() { return CamaraVis; }
-	GLboolean getapagaLuzLinternaVerde() { return apagaluzLinternaVerde; }	//Metodo para apagar la luz
+	GLboolean getapagaLuzFoco() { return apagaluzFoco; }	//Metodo para apagar la luz superior de foco
 	GLboolean getapagaLuzLinternaRoja() { return apagaluzLinternaRoja; }	//Metodo para apagar la luz
 	GLboolean getapagaLuzLinternaAzul() { return apagaluzLinternaAzul; }	//Metodo para apagar la luz
 	GLfloat getCanica1() { return Canica1; }
 	GLfloat getCanica2() { return Canica2; }
 
-	// ---------------------------------------------- //
+	GLfloat getPieDKirby() { return PieDKirby; }
+	GLfloat getPieIKirby() { return PieIKirby; }
+	GLfloat getBraDKirby() { return BraDKirby; }
+	GLfloat getBraIKirby() { return BraIKirby; }
 
-	
-	GLboolean getapagaLuz2() { return apagaluz2; }	//Metodo para apagar la luz de Lampara 2
-	GLboolean getapagaLuzControl() { return apagaluzControl; }	//Metodo para apagar la luz de Lamparas
-	GLboolean getapagaLuzHelicoptero() { return apagaluzHelicoptero; }	//Metodo para apagar la luz
-	
-	GLboolean getapagaLuzCocheT() { return apagaluzCocheT; }	//Metodo para apagar la luz Trasera
-	GLboolean getapagaLuzCocheD() { return apagaluzCocheD; }	//Metodo para apagar la luz Delantera 
-	GLfloat getCarroAdelante() { return CarroAdelante; }
-	GLfloat getCarroAtras() { return CarroAtras; }
-	GLfloat getmuevexCarro() { return muevexCarro; }
-	GLfloat getarticulacion1() { return articulacion1; }
-	GLfloat getangulocola() { return angulocola; }
-	GLfloat getanguloCofre() { return anguloCofre; }
-	GLfloat getangulopata1() { return angulopata1; }
-	GLfloat getangulopata2() { return angulopata2; }
-	GLfloat getangulopata3() { return angulopata3; }
-	GLfloat getangulopata4() { return angulopata4; }
 	bool getShouldClose() {
 		return  glfwWindowShouldClose(mainWindow);
 	}
@@ -70,6 +57,7 @@ private:
 	GLfloat yChange;
 
 	//-- VARIABLES QUE SE UTILIZAN EN EL CÓDIGO ------ //
+	GLfloat Reset;
 	GLfloat FlipperD;
 	GLfloat FlipperI;
 	GLfloat FlipperISW;
@@ -77,12 +65,17 @@ private:
 	GLfloat MonedaPinball;
 	GLfloat ActivaPalanca;
 	GLfloat ActivaLanzamiento;
-	GLboolean apagaluzLinternaVerde;				//Variable de control de apagado de la luz Verde
+	GLboolean apagaluzFoco;				//Variable de control de apagado de la luz Verde
 	GLboolean apagaluzLinternaRoja;				//Variable de control de apagado de la luz Roja
 	GLboolean apagaluzLinternaAzul;				//Variable de control de apagado de la luz Azul
 	int CamaraVis;
 	bool Canica1;
 	bool Canica2;
+
+	GLfloat PieDKirby;
+	GLfloat PieIKirby;
+	GLfloat BraDKirby;
+	GLfloat BraIKirby;
 
 	// ---------------------------------------------- //
 
