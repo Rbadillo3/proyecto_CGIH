@@ -1991,6 +1991,9 @@ int main()
 
 		//Para el botón de Reset
 		if (mainWindow.getReset()) {
+			
+			reproduciranimacion = 0;
+
 			float toffsetflechau = 0.0f;
 			float toffsetflechav = 0.0f;
 			float toffsetnumerou = 0.0f;
@@ -2057,7 +2060,7 @@ int main()
 			//Valores Keyframes
 			CanicaAnim3 = false;
 			Canica3Anim = false;
-
+			
 
 			//TEXTURAS CON MOVIMIENTO
 			valorUnidades = 0;
@@ -2396,7 +2399,7 @@ int main()
 		//Material_brillante.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		meshList[4]->RenderMesh();
 
-		if (Canica1Anim || Canica2Anim || Canica3Anim &&finAnim3==false) {
+		if (Canica1Anim || Canica2Anim || Canica3Anim) {
 
 			
 			//Para el NUMERO 0 DE UNIDADES 
@@ -2631,11 +2634,9 @@ int main()
 	return 0;
 }
 
-//esto se sustituye pa las nuevas keyframe
 void inputKeyframes(bool* keys)
 {
-
-	if (Canica3Anim)
+	if (mainWindow.getReset()==false)
 	{
 		//printf("Cero\n");
 		if (reproduciranimacion < 1)
@@ -2653,15 +2654,12 @@ void inputKeyframes(bool* keys)
 				reproduciranimacion++;
 				//printf("\n presiona 0 para habilitar reproducir de nuevo la animación'\n");
 				habilitaranimacion = 0;
-				Canica1Anim = false;
-				Canica2Anim = false;
-				Canica3Anim = false;
+
 			}
 			else
 			{
 				play = false;
 				CanicaAnim3 = false;
-				Canica3Anim = false;
 				finAnim3 = true;
 			}
 		}
