@@ -1,0 +1,62 @@
+newmtl lambert2SG
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+map_Kd rep_inf_arc_blue.png
+Ni 1.00
+newmtl lambert3SG
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+map_Kd rep_inf_arc_pack_blue.png
+Ni 1.00
+newmtl rep_inf_feluciatrooper1:Shape
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.48 0.48 0.48
+Tf 1.00 1.00 1.00
+map_Kd rep_inf_feluciatrooper.png
+Ni 1.00
+Ks 0.00 0.00 0.00
+Ns 5.00
+newmtl rep_inf_trooper:Shape_002
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.48 0.48 0.48
+Tf 1.00 1.00 1.00
+map_Kd rep_inf_trooper.png
+Ni 1.00
+Ks 0.00 0.00 0.00
+Ns 5.00
+newmtl rep_inf_trooper:Shape_003
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.48 0.48 0.48
+Tf 1.00 1.00 1.00
+map_Kd rep_inf_trooper.png
+Ni 1.00
+Ks 0.00 0.00 0.00
+Ns 5.00
+newmtl rep_la_at_gunship2:lambert2SG
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+map_Kd REP_LA_AT.png
+Ni 1.00
+newmtl rep_la_at_gunship2:lambert3SG
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+map_Kd REP_LA_AT_BALLS.png
+Ni 1.00
+newmtl rep_weap_inf_rifle:lambert2SG
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+map_Kd rep_1st_weap_inf_rifle.png
+Ni 1.00
